@@ -5,7 +5,7 @@ import (
   "fmt"
 )
 
-var parentDescribe Describe
+var parentDescribe D
 
 type Runnable interface {
   Run() (bool)
@@ -20,33 +20,32 @@ type It struct {
 func (it It) Run() (bool) {
   fmt.Print(it.name)
   it.h(it.t)
-  it.t.ran = true
 
   return !it.t.Failed()
 }
 
-type Describe struct {
+type D struct {
   name string
   children []Runnable
 }
 
-func NewDescribe(name string, h func(*Describe)) {
-  parentDescribe = Describe{name: name}
+func Describe(name string, h func(*D)) {
+  parentDescribe = D{name: name}
   h(&parentDescribe)
 }
 
-func (d *Describe) Describe(name string, h func(*Describe)) {
-  describe := Describe{name: name}
+func (d *D) Describe(name string, h func(*D)) {
+  describe := D{name: name}
   d.children = append(d.children, Runnable(describe))
   h(&describe)
 }
 
-func (d *Describe) It(name string, h func(t *T)) {
+func (d *D) It(name string, h func(t *T)) {
   it := It{name: name, h: h, t: &T{}}
   d.children = append(d.children, Runnable(it))
 }
 
-func (d Describe) Run() (bool) {
+func (d D) Run() (bool) {
   fmt.Print(d.name)
   //TODO: run beforeEach
   succeed := true
@@ -59,26 +58,6 @@ func (d Describe) Run() (bool) {
   return succeed
 }
 
-type T struct {
-  testing.T
-
-  ran bool
-}
-
-func (t *T) Assert(num int) (*Assertion) {
-  return &Assertion{ t: t, src: num }
-}
-
-type Assertion struct {
-  src int
-  t *T
-}
-
-func (a *Assertion) Equals(dst int) {
-  if dst != a.src {
-    a.t.Fail()
-  }
-}
 
 func Goblin(t *testing.T) {
   succeed := parentDescribe.Run()

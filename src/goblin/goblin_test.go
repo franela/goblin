@@ -5,49 +5,37 @@ import (
 )
 
 func TestAddNumbersSucceed(t *testing.T) {
-  ft := testing.T{}
+  fakeTest := testing.T{}
 
-  var test *T
-
-  NewDescribe("Numbers", func(d *Describe) {
+  Describe("Numbers", func(d *D) {
     d.It("Should add numbers", func(t *T) {
-      test = t
       sum := 1+1
       t.Assert(sum).Equals(2)
     })
   })
 
-  Goblin(&ft)
+  Goblin(&fakeTest)
 
-  if !test.ran {
-    t.Fatal()
-  }
 
-  if ft.Failed() {
+  if fakeTest.Failed() {
     t.Fatal()
   }
 }
 
 func TestAddNumbersFails(t *testing.T) {
-  ft := testing.T{}
+  fakeTest := testing.T{}
 
-  var test *T
 
-  NewDescribe("Numbers", func(d *Describe) {
+  Describe("Numbers", func(d *D) {
     d.It("Should add numbers", func(t *T) {
-      test = t
       sum := 1+1
       t.Assert(sum).Equals(4)
     })
   })
 
-  Goblin(&ft)
+  Goblin(&fakeTest)
 
-  if !test.ran {
-    t.Fatal()
-  }
-
-  if !ft.Failed() {
+  if !fakeTest.Failed() {
     t.Fatal()
   }
 }
