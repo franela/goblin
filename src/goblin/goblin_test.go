@@ -72,9 +72,11 @@ func TestMultipleDescribes(t *testing.T) {
 
   Describe("Numbers", func(d *D) {
 
-    d.It("Should add numbers", func(t *T) {
-      sum := 1+1
-      t.Assert(sum).Equals(2)
+    d.Describe("Addition", func(d *D) {
+      d.It("Should add numbers", func(t *T) {
+        sum := 1+1
+        t.Assert(sum).Equals(2)
+      })
     })
 
     d.Describe("Substraction", func(d *D) {
