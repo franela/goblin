@@ -67,27 +67,27 @@ func TestMultipleIts(t *testing.T) {
 
 
 
-//func TestMultipleDescribes(t *testing.T) {
-  //fakeTest := testing.T{}
+func TestMultipleDescribes(t *testing.T) {
+  fakeTest := testing.T{}
 
-  //Describe("Numbers", func(d *D) {
+  Describe("Numbers", func(d *D) {
 
-    //d.It("Should add numbers", func(t *T) {
-      //sum := 1+1
-      //t.Assert(sum).Equals(2)
-    //})
+    d.It("Should add numbers", func(t *T) {
+      sum := 1+1
+      t.Assert(sum).Equals(2)
+    })
 
-    //d.Describe("Substraction", func(d *D) {
-        //d.It("Should substract numbers ", func(t *T) {
-          //sub := 5-5
-          //t.Assert(sub).Equals(1)
-        //})
-    //})
-  //})
+    d.Describe("Substraction", func(d *D) {
+        d.It("Should substract numbers ", func(t *T) {
+          sub := 5-5
+          t.Assert(sub).Equals(1)
+        })
+    })
+  })
 
-  //Goblin(&fakeTest)
+  Goblin(&fakeTest)
 
-  //if !fakeTest.Failed() {
-    //t.Fatal()
-  //}
-//}
+  if !fakeTest.Failed() {
+    t.Fatal()
+  }
+}

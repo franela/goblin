@@ -5,7 +5,7 @@ import (
   "fmt"
 )
 
-var parentDescribe D
+var parentDescribe *D
 
 type Runnable interface {
   Run() (bool)
@@ -30,15 +30,14 @@ type D struct {
 }
 
 func Describe(name string, h func(*D)) {
-  parentDescribe = D{name: name}
-  h(&parentDescribe)
+  parentDescribe = &D{name: name}
+  h(parentDescribe)
 }
 
 func (d *D) Describe(name string, h func(*D)) {
-  describe := D{name: name}
-  //d.addChild(Runnable(describe))
-  d.children = append(d.children, Runnable(describe))
-  h(&describe)
+  describe := &D{name: name}
+  d.addChild(Runnable(describe))
+  h(describe)
   fmt.Println(d.children,"AFTER IT", describe, Runnable(describe))
 }
 
