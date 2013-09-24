@@ -18,7 +18,7 @@ type It struct {
 }
 
 func (it It) Run() (bool) {
-  fmt.Print(it.name)
+  fmt.Println(it.name)
   it.h(it.t)
 
   return !it.t.Failed()
@@ -36,17 +36,23 @@ func Describe(name string, h func(*D)) {
 
 func (d *D) Describe(name string, h func(*D)) {
   describe := D{name: name}
+  //d.addChild(Runnable(describe))
   d.children = append(d.children, Runnable(describe))
   h(&describe)
+  fmt.Println(d.children,"AFTER IT", describe, Runnable(describe))
+}
+
+func (d *D) addChild(r Runnable) {
+  d.children = append(d.children, r)
 }
 
 func (d *D) It(name string, h func(t *T)) {
   it := It{name: name, h: h, t: &T{}}
-  d.children = append(d.children, Runnable(it))
+  d.addChild(Runnable(it))
 }
 
 func (d D) Run() (bool) {
-  fmt.Print(d.name)
+  fmt.Println(d.name)
   //TODO: run beforeEach
   succeed := true
   for _, r := range d.children {
@@ -60,6 +66,7 @@ func (d D) Run() (bool) {
 
 
 func Goblin(t *testing.T) {
+  fmt.Println(parentDescribe, "PARENT")
   succeed := parentDescribe.Run()
 
   if !succeed {
