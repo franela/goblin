@@ -27,6 +27,7 @@ func (it It) Run() (bool) {
 type D struct {
   name string
   children []Runnable
+  befores []func()
 }
 
 func Describe(name string, h func(*D)) {
@@ -38,7 +39,10 @@ func (d *D) Describe(name string, h func(*D)) {
   describe := &D{name: name}
   d.addChild(Runnable(describe))
   h(describe)
-  fmt.Println(d.children,"AFTER IT", describe, Runnable(describe))
+}
+
+func (d *D) BeforeEach(h func()) {
+  d.befores = append(d.befores, h)
 }
 
 func (d *D) addChild(r Runnable) {
@@ -51,8 +55,11 @@ func (d *D) It(name string, h func(t *T)) {
 }
 
 func (d D) Run() (bool) {
-  fmt.Println(d.name)
-  //TODO: run beforeEach
+  //TODO: handle errors
+  for _, b := range d.befores {
+    b()
+  }
+  
   succeed := true
   for _, r := range d.children {
     if !r.Run() {
@@ -65,7 +72,6 @@ func (d D) Run() (bool) {
 
 
 func Goblin(t *testing.T) {
-  fmt.Println(parentDescribe, "PARENT")
   succeed := parentDescribe.Run()
 
   if !succeed {
