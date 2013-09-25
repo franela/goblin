@@ -36,6 +36,7 @@ type D struct {
   children []Runnable
   beforeEach []func()
   afterEach []func()
+  befores []func()
 }
 
 func Describe(name string, h func(*D)) {
@@ -60,7 +61,6 @@ func (d *D) runBeforeEach() {
 }
 
 
-
 func (d *D) runAfterEach() {
   if d.parent != nil {
     d.parent.runAfterEach()
@@ -71,6 +71,9 @@ func (d *D) runAfterEach() {
   }
 }
 
+func (d *D) Before(h func()) {
+  d.befores = append(d.befores, h)
+}
 
 func (d *D) BeforeEach(h func()) {
   d.beforeEach = append(d.beforeEach, h)
@@ -91,12 +94,16 @@ func (d *D) It(name string, h func(t *T)) {
 
 func (d D) Run() (bool) {
   succeed := true
+
+  for _, b := range d.befores {
+    b()
+  }
+
   for _, r := range d.children {
     if !r.Run() {
       succeed = false
     }
   }
-  //TODO: run afterEach
   return succeed
 }
 
