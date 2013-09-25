@@ -98,19 +98,18 @@ func TestBeforeEach(t *testing.T) {
 
 
   Describe("Numbers", func(d *D) {
-    oldBefore, before := 0, 0
+    before := 0
 
     d.BeforeEach(func() {
-      oldBefore = before
       before++
     })
 
     d.It("Should have called beforeEach", func(t *T) {
-      t.Assert(before).Equals(oldBefore+1)
+      t.Assert(before).Equals(1)
     })
 
     d.It("Should have called beforeEach also for this one", func(t *T) {
-      t.Assert(before).Equals(oldBefore+1)
+      t.Assert(before).Equals(2)
     })
   })
 
@@ -139,6 +138,40 @@ func TestMultipleBeforeEach(t *testing.T) {
     d.It("Should have called all the registered beforeEach", func(t *T) {
       t.Assert(before).Equals(2)
     })
+  })
+
+  Goblin(&fakeTest)
+
+  if fakeTest.Failed() {
+    t.Fatal()
+  }
+}
+
+func TestNestedBeforeEach(t *testing.T) {
+  fakeTest := testing.T{}
+
+
+  Describe("Numbers", func(d *D) {
+    before := 0
+
+    d.BeforeEach(func() {
+      before++
+    })
+
+    d.Describe("Addition", func(d *D) {
+      d.BeforeEach(func() {
+        before++
+      })
+
+      d.It("Should have called all the registered beforeEach", func(t *T) {
+        t.Assert(before).Equals(2)
+      })
+
+      d.It("Should have called all the registered beforeEach also for this one", func(t *T) {
+        t.Assert(before).Equals(4)
+      })
+    })
+
   })
 
   Goblin(&fakeTest)
