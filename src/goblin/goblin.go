@@ -37,6 +37,7 @@ type D struct {
   beforeEach []func()
   afterEach []func()
   befores []func()
+  afters []func()
 }
 
 func Describe(name string, h func(*D)) {
@@ -79,6 +80,10 @@ func (d *D) BeforeEach(h func()) {
   d.beforeEach = append(d.beforeEach, h)
 }
 
+func (d *D) After(h func()) {
+  d.afters = append(d.afters, h)
+}
+
 func (d *D) AfterEach(h func()) {
   d.afterEach = append(d.afterEach, h)
 }
@@ -103,6 +108,10 @@ func (d D) Run() (bool) {
     if !r.Run() {
       succeed = false
     }
+  }
+
+  for _, b := range d.afters {
+    b()
   }
   return succeed
 }
