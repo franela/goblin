@@ -5,122 +5,144 @@ import (
   "fmt"
 )
 
-var parentDescribe *D
-
 type Runnable interface {
-  Run() (bool)
+    run(*G) (bool)
+}
+
+
+
+
+func (g *G) Describe(name string, h func()) {
+    d := &Describe{name:name, h:h, parent:g.parent}
+
+    if d.parent != nil {
+        d.parent.children = append(d.parent.children, Runnable(d))
+    }
+
+    g.parent = d
+
+    h()
+
+    g.parent = d.parent
+
+    if g.parent == nil {
+        if d.run(g) {
+            g.t.Fail()
+        }
+    }
+}
+
+type Describe struct {
+    name string
+    h func()
+    children []Runnable
+    befores []func()
+    afters []func()
+    afterEach []func()
+    beforeEach []func()
+    parent *Describe
+}
+
+func (d *Describe) runBeforeEach() {
+    if d.parent != nil {
+        d.parent.runBeforeEach()
+    }
+
+    for _, b := range d.beforeEach {
+        b()
+    }
+}
+
+func (d *Describe) runAfterEach() {
+
+    if d.parent != nil {
+      d.parent.runAfterEach()
+    }
+
+    for _, a := range d.afterEach {
+      a()
+    }
+}
+
+
+func (d *Describe) run(g *G) (bool) {
+    failed := false
+
+    for _, b := range d.befores {
+        b()
+    }
+
+    for _, r := range d.children {
+        if r.run(g) {
+            failed = true
+        }
+    }
+
+    for _, a := range d.afters {
+        a()
+    }
+
+    return failed
 }
 
 type It struct {
-  name string
-  h func(*T)
-  t *T
-  parent *D
+    h func()
+    name string
+    parent *Describe
+    failed bool
 }
 
-func (it It) Run() (bool) {
-  //TODO: should handle errors for beforeEach
-  it.parent.runBeforeEach()
+func (it *It) run(g *G) (bool) {
+    g.currentIt = it
+    //TODO: should handle errors for beforeEach
+    it.parent.runBeforeEach()
 
-  fmt.Println(it.name)
-  it.h(it.t)
+    fmt.Println(it.name)
 
-  it.parent.runAfterEach()
+    it.h()
 
-  return !it.t.Failed()
+    it.parent.runAfterEach()
+
+    return it.failed
+
 }
 
-type D struct {
-  name string
-  parent *D
-  children []Runnable
-  beforeEach []func()
-  afterEach []func()
-  befores []func()
-  afters []func()
-}
-
-func Describe(name string, h func(*D)) {
-  parentDescribe = &D{name: name}
-  h(parentDescribe)
-}
-
-func (d *D) Describe(name string, h func(*D)) {
-  describe := &D{name: name, parent: d}
-  d.addChild(Runnable(describe))
-  h(describe)
-}
-
-func (d *D) runBeforeEach() {
-  if d.parent != nil {
-    d.parent.runBeforeEach()
-  }
-
-  for _, b := range d.beforeEach {
-    b()
-  }
+func Goblin (t *testing.T) (*G) {
+    g := &G{t: t}
+    return g
 }
 
 
-func (d *D) runAfterEach() {
-  if d.parent != nil {
-    d.parent.runAfterEach()
-  }
+type G struct {
+    t *testing.T
+    parent *Describe
+    currentIt *It
 
-  for _, a := range d.afterEach {
-    a()
-  }
-}
-
-func (d *D) Before(h func()) {
-  d.befores = append(d.befores, h)
-}
-
-func (d *D) BeforeEach(h func()) {
-  d.beforeEach = append(d.beforeEach, h)
-}
-
-func (d *D) After(h func()) {
-  d.afters = append(d.afters, h)
-}
-
-func (d *D) AfterEach(h func()) {
-  d.afterEach = append(d.afterEach, h)
-}
-
-func (d *D) addChild(r Runnable) {
-  d.children = append(d.children, r)
-}
-
-func (d *D) It(name string, h func(t *T)) {
-  it := It{name: name, h: h, t: &T{}, parent: d}
-  d.addChild(Runnable(it))
-}
-
-func (d D) Run() (bool) {
-  succeed := true
-
-  for _, b := range d.befores {
-    b()
-  }
-
-  for _, r := range d.children {
-    if !r.Run() {
-      succeed = false
-    }
-  }
-
-  for _, b := range d.afters {
-    b()
-  }
-  return succeed
 }
 
 
-func Goblin(t *testing.T) {
-  succeed := parentDescribe.Run()
-
-  if !succeed {
-    t.Fail()
-  }
+func (g *G) It(name string, h func()) {
+    it := &It{name:name, h:h, parent:g.parent}
+    g.parent.children = append(g.parent.children, Runnable(it))
 }
+
+func (g *G) Before(h func()) {
+    g.parent.befores = append(g.parent.befores, h)
+}
+
+func (g *G) BeforeEach(h func()) {
+    g.parent.beforeEach = append(g.parent.beforeEach, h)
+}
+
+func (g *G) After(h func()) {
+    g.parent.afters = append(g.parent.afters, h)
+}
+
+func (g *G) AfterEach(h func()) {
+    g.parent.afterEach = append(g.parent.afterEach, h)
+}
+
+func (g *G) Assert(src int) (*Assertion) {
+    return &Assertion{src: src , it: g.currentIt}
+}
+

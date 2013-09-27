@@ -7,24 +7,24 @@ import (
 func TestBeforeEach(t *testing.T) {
     fakeTest := testing.T{}
 
+    g := Goblin(&fakeTest)
 
-    Describe("Numbers", func(d *D) {
+    g.Describe("Numbers", func() {
         before := 0
 
-        d.BeforeEach(func() {
+        g.BeforeEach(func() {
             before++
         })
 
-        d.It("Should have called beforeEach", func(t *T) {
-            t.Assert(before).Equals(1)
+        g.It("Should have called beforeEach", func() {
+            g.Assert(before).Equals(1)
         })
 
-        d.It("Should have called beforeEach also for this one", func(t *T) {
-            t.Assert(before).Equals(2)
+        g.It("Should have called beforeEach also for this one", func() {
+            g.Assert(before).Equals(2)
         })
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() {
         t.Fatal()
@@ -34,24 +34,24 @@ func TestBeforeEach(t *testing.T) {
 func TestMultipleBeforeEach(t *testing.T) {
     fakeTest := testing.T{}
 
+    g := Goblin(&fakeTest)
 
-    Describe("Numbers", func(d *D) {
+    g.Describe("Numbers", func() {
         before := 0
 
-        d.BeforeEach(func() {
+        g.BeforeEach(func() {
             before++
         })
 
-        d.BeforeEach(func() {
+        g.BeforeEach(func() {
             before++
         })
 
-        d.It("Should have called all the registered beforeEach", func(t *T) {
-            t.Assert(before).Equals(2)
+        g.It("Should have called all the registered beforeEach", func() {
+            g.Assert(before).Equals(2)
         })
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() {
         t.Fatal()
@@ -61,31 +61,31 @@ func TestMultipleBeforeEach(t *testing.T) {
 func TestNestedBeforeEach(t *testing.T) {
     fakeTest := testing.T{}
 
+    g := Goblin(&fakeTest)
 
-    Describe("Numbers", func(d *D) {
+    g.Describe("Numbers", func() {
         before := 0
 
-        d.BeforeEach(func() {
+        g.BeforeEach(func() {
             before++
         })
 
-        d.Describe("Addition", func(d *D) {
-            d.BeforeEach(func() {
+        g.Describe("Addition", func() {
+            g.BeforeEach(func() {
                 before++
             })
 
-            d.It("Should have called all the registered beforeEach", func(t *T) {
-                t.Assert(before).Equals(2)
+            g.It("Should have called all the registered beforeEach", func() {
+                g.Assert(before).Equals(2)
             })
 
-            d.It("Should have called all the registered beforeEach also for this one", func(t *T) {
-                t.Assert(before).Equals(4)
+            g.It("Should have called all the registered beforeEach also for this one", func() {
+                g.Assert(before).Equals(4)
             })
         })
 
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() {
         t.Fatal()
@@ -94,24 +94,24 @@ func TestNestedBeforeEach(t *testing.T) {
 
 func TestAfterEach(t *testing.T) {
     fakeTest := testing.T{}
-
     after := 0
-    Describe("Numbers", func(d *D) {
 
-        d.AfterEach(func() {
+    g := Goblin(&fakeTest)
+    g.Describe("Numbers", func() {
+
+        g.AfterEach(func() {
             after++
         })
 
-        d.It("Should call afterEach after this test", func(t *T) {
-            t.Assert(after).Equals(0)
+        g.It("Should call afterEach after this test", func() {
+            g.Assert(after).Equals(0)
         })
 
-        d.It("Should have called afterEach before this test ", func(t *T) {
-            t.Assert(after).Equals(1)
+        g.It("Should have called afterEach before this test ", func() {
+            g.Assert(after).Equals(1)
         })
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() || after != 2 {
         t.Fatal()
@@ -121,24 +121,24 @@ func TestAfterEach(t *testing.T) {
 func TestMultipleAfterEach(t *testing.T) {
     fakeTest := testing.T{}
 
+    g := Goblin(&fakeTest)
 
     after := 0
-    Describe("Numbers", func(d *D) {
+    g.Describe("Numbers", func() {
 
-        d.AfterEach(func() {
+        g.AfterEach(func() {
             after++
         })
 
-        d.AfterEach(func() {
+        g.AfterEach(func() {
             after++
         })
 
-        d.It("Should call all the registered afterEach", func(t *T) {
-            t.Assert(after).Equals(0)
+        g.It("Should call all the registered afterEach", func() {
+            g.Assert(after).Equals(0)
         })
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() || after != 2 {
         t.Fatal()
@@ -148,30 +148,31 @@ func TestMultipleAfterEach(t *testing.T) {
 func TestNestedAfterEach(t *testing.T) {
     fakeTest := testing.T{}
 
+    g := Goblin(&fakeTest)
     after := 0
-    Describe("Numbers", func(d *D) {
 
-        d.AfterEach(func() {
+    g.Describe("Numbers", func() {
+
+        g.AfterEach(func() {
             after++
         })
 
-        d.Describe("Addition", func(d *D) {
-            d.AfterEach(func() {
+        g.Describe("Addition", func() {
+            g.AfterEach(func() {
                 after++
             })
 
-            d.It("Should call all the registered afterEach", func(t *T) {
-                t.Assert(after).Equals(0)
+            g.It("Should call all the registered afterEach", func() {
+                g.Assert(after).Equals(0)
             })
 
-            d.It("Should have called all the registered aftearEach", func(t *T) {
-                t.Assert(after).Equals(2)
+            g.It("Should have called all the registered aftearEach", func() {
+                g.Assert(after).Equals(2)
             })
         })
 
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() || after != 4 {
         t.Fatal()

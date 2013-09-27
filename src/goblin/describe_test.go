@@ -7,23 +7,24 @@ import (
 func TestBefore(t *testing.T) {
     fakeTest := testing.T{}
 
-    Describe("Numbers", func(d *D) {
+    g := Goblin(&fakeTest)
+
+    g.Describe("Numbers", func() {
         before := 0
 
-        d.Before(func() {
+        g.Before(func() {
             before++
         })
 
-        d.It("Should have called before", func(t *T) {
-            t.Assert(before).Equals(1)
+        g.It("Should have called before", func() {
+            g.Assert(before).Equals(1)
         })
 
-        d.It("Should have called before only once", func(t *T) {
-            t.Assert(before).Equals(1)
+        g.It("Should have called before only once", func() {
+            g.Assert(before).Equals(1)
         })
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() {
         t.Fatal()
@@ -34,23 +35,24 @@ func TestMultipleBefore(t *testing.T) {
     fakeTest := testing.T{}
 
 
-    Describe("Numbers", func(d *D) {
+    g := Goblin(&fakeTest)
+
+    g.Describe("Numbers", func() {
         before := 0
 
-        d.Before(func() {
+        g.Before(func() {
             before++
         })
 
-        d.Before(func() {
+        g.Before(func() {
             before++
         })
 
-        d.It("Should have called all the registered before", func(t *T) {
-            t.Assert(before).Equals(2)
+        g.It("Should have called all the registered before", func() {
+            g.Assert(before).Equals(2)
         })
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() {
         t.Fatal()
@@ -60,30 +62,31 @@ func TestMultipleBefore(t *testing.T) {
 func TestNestedBefore(t *testing.T) {
     fakeTest := testing.T{}
 
-    Describe("Numbers", func(d *D) {
+    g := Goblin(&fakeTest)
+
+    g.Describe("Numbers", func() {
         before := 0
 
-        d.Before(func() {
+        g.Before(func() {
             before++
         })
 
-        d.Describe("Addition", func(d *D) {
-            d.Before(func() {
+        g.Describe("Addition", func() {
+            g.Before(func() {
                 before++
             })
 
-            d.It("Should have called all the registered before", func(t *T) {
-                t.Assert(before).Equals(2)
+            g.It("Should have called all the registered before", func() {
+                g.Assert(before).Equals(2)
             })
 
-            d.It("Should have called all the registered before only once", func(t *T) {
-                t.Assert(before).Equals(2)
+            g.It("Should have called all the registered before only once", func() {
+                g.Assert(before).Equals(2)
             })
         })
 
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() {
         t.Fatal()
@@ -94,23 +97,23 @@ func TestNestedBefore(t *testing.T) {
 func TestAfter(t *testing.T) {
     fakeTest := testing.T{}
 
+    g := Goblin(&fakeTest)
     after := 0
-    Describe("Numbers", func(d *D) {
+    g.Describe("Numbers", func() {
 
-        d.After(func() {
+        g.After(func() {
             after++
         })
 
-        d.It("Should call after only once", func(t *T) {
-            t.Assert(after).Equals(0)
+        g.It("Should call after only once", func() {
+            g.Assert(after).Equals(0)
         })
 
-        d.It("Should call after only once", func(t *T) {
-            t.Assert(after).Equals(0)
+        g.It("Should call after only once", func() {
+            g.Assert(after).Equals(0)
         })
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() || after != 1 {
         t.Fatal()
@@ -120,24 +123,24 @@ func TestAfter(t *testing.T) {
 func TestMultipleAfter(t *testing.T) {
     fakeTest := testing.T{}
 
+    g := Goblin(&fakeTest)
 
     after := 0
-    Describe("Numbers", func(d *D) {
+    g.Describe("Numbers", func() {
 
-        d.After(func() {
+        g.After(func() {
             after++
         })
 
-        d.After(func() {
+        g.After(func() {
             after++
         })
 
-        d.It("Should call all the registered after", func(t *T) {
-            t.Assert(after).Equals(0)
+        g.It("Should call all the registered after", func() {
+            g.Assert(after).Equals(0)
         })
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() && after != 2 {
         t.Fatal()
@@ -147,30 +150,30 @@ func TestMultipleAfter(t *testing.T) {
 func TestNestedAfter(t *testing.T) {
     fakeTest := testing.T{}
 
+    g := Goblin(&fakeTest)
     after := 0
-    Describe("Numbers", func(d *D) {
+    g.Describe("Numbers", func() {
 
-        d.After(func() {
+        g.After(func() {
             after++
         })
 
-        d.Describe("Addition", func(d *D) {
-            d.After(func() {
+        g.Describe("Addition", func() {
+            g.After(func() {
                 after++
             })
 
-            d.It("Should call all the registered after", func(t *T) {
-                t.Assert(after).Equals(0)
+            g.It("Should call all the registered after", func() {
+                g.Assert(after).Equals(0)
             })
 
-            d.It("Should have called all the registered after only once", func(t *T) {
-                t.Assert(after).Equals(0)
+            g.It("Should have called all the registered after only once", func() {
+                g.Assert(after).Equals(0)
             })
         })
 
     })
 
-    Goblin(&fakeTest)
 
     if fakeTest.Failed() || after != 2 {
         t.Fatal()

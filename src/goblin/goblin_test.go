@@ -6,16 +6,14 @@ import (
 
 func TestAddNumbersSucceed(t *testing.T) {
     fakeTest := testing.T{}
+    g := Goblin(&fakeTest)
 
-    Describe("Numbers", func(d *D) {
-        d.It("Should add numbers", func(t *T) {
+    g.Describe("Numbers", func() {
+        g.It("Should add numbers", func() {
             sum := 1+1
-            t.Assert(sum).Equals(2)
+            g.Assert(sum).Equals(2)
         })
     })
-
-    Goblin(&fakeTest)
-
 
     if fakeTest.Failed() {
         t.Fatal()
@@ -25,14 +23,15 @@ func TestAddNumbersSucceed(t *testing.T) {
 func TestAddNumbersFails(t *testing.T) {
     fakeTest := testing.T{}
 
-    Describe("Numbers", func(d *D) {
-        d.It("Should add numbers", func(t *T) {
+    g := Goblin(&fakeTest)
+
+    g.Describe("Numbers", func() {
+        g.It("Should add numbers", func() {
             sum := 1+1
-            t.Assert(sum).Equals(4)
+            g.Assert(sum).Equals(4)
         })
     })
 
-    Goblin(&fakeTest)
 
     if !fakeTest.Failed() {
         t.Fatal()
@@ -44,19 +43,20 @@ func TestAddNumbersFails(t *testing.T) {
 func TestMultipleIts(t *testing.T) {
     fakeTest := testing.T{}
 
-    Describe("Numbers", func(d *D) {
-        d.It("Should add numbers", func(t *T) {
+    g := Goblin(&fakeTest)
+
+    g.Describe("Numbers", func() {
+        g.It("Should add numbers", func() {
             sum := 1+1
-            t.Assert(sum).Equals(4)
+            g.Assert(sum).Equals(4)
         })
 
-        d.It("Should add numbers", func(t *T) {
+        g.It("Should add numbers", func() {
             sum := 1+1
-            t.Assert(sum).Equals(2)
+            g.Assert(sum).Equals(2)
         })
     })
 
-    Goblin(&fakeTest)
 
     if !fakeTest.Failed() {
         t.Fatal()
@@ -68,24 +68,25 @@ func TestMultipleIts(t *testing.T) {
 func TestMultipleDescribes(t *testing.T) {
     fakeTest := testing.T{}
 
-    Describe("Numbers", func(d *D) {
+    g := Goblin(&fakeTest)
 
-        d.Describe("Addition", func(d *D) {
-            d.It("Should add numbers", func(t *T) {
+    g.Describe("Numbers", func() {
+
+        g.Describe("Addition", func() {
+           g.It("Should add numbers", func() {
                 sum := 1+1
-                t.Assert(sum).Equals(2)
+                g.Assert(sum).Equals(2)
             })
         })
 
-        d.Describe("Substraction", func(d *D) {
-            d.It("Should substract numbers ", func(t *T) {
+        g.Describe("Substraction", func() {
+            g.It("Should substract numbers ", func() {
                 sub := 5-5
-                t.Assert(sub).Equals(1)
+                g.Assert(sub).Equals(1)
             })
         })
     })
 
-    Goblin(&fakeTest)
 
     if !fakeTest.Failed() {
         t.Fatal()
