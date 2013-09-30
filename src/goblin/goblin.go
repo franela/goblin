@@ -2,15 +2,11 @@ package goblin
 
 import (
   "testing"
-  "fmt"
 )
 
 type Runnable interface {
     run(*G) (bool)
 }
-
-
-
 
 func (g *G) Describe(name string, h func()) {
     d := &Describe{name:name, h:h, parent:g.parent}
@@ -26,9 +22,11 @@ func (g *G) Describe(name string, h func()) {
     g.parent = d.parent
 
     if g.parent == nil {
+        g.reporter.begin()
         if d.run(g) {
             g.t.Fail()
         }
+        g.reporter.end()
     }
 }
 
@@ -66,6 +64,8 @@ func (d *Describe) runAfterEach() {
 
 
 func (d *Describe) run(g *G) (bool) {
+    g.reporter.beginDescribe(d.name)
+
     failed := false
 
     for _, b := range d.befores {
@@ -82,6 +82,8 @@ func (d *Describe) run(g *G) (bool) {
         a()
     }
 
+    g.reporter.endDescribe()
+
     return failed
 }
 
@@ -97,18 +99,24 @@ func (it *It) run(g *G) (bool) {
     //TODO: should handle errors for beforeEach
     it.parent.runBeforeEach()
 
-    fmt.Println(it.name)
+    //fmt.Println(it.name)
 
     it.h()
 
     it.parent.runAfterEach()
 
+    if it.failed {
+        g.reporter.itFailed(it.name)
+    } else {
+        g.reporter.itPassed(it.name)
+    }
     return it.failed
 
 }
 
 func Goblin (t *testing.T) (*G) {
     g := &G{t: t}
+    g.reporter = Reporter(&DetailedReporter{})
     return g
 }
 
@@ -117,9 +125,12 @@ type G struct {
     t *testing.T
     parent *Describe
     currentIt *It
-
+    reporter Reporter
 }
 
+func (g *G) SetReporter(r Reporter) {
+    g.reporter = r
+}
 
 func (g *G) It(name string, h func()) {
     it := &It{name:name, h:h, parent:g.parent}
@@ -145,4 +156,3 @@ func (g *G) AfterEach(h func()) {
 func (g *G) Assert(src int) (*Assertion) {
     return &Assertion{src: src , it: g.currentIt}
 }
-
