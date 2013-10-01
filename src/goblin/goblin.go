@@ -2,6 +2,7 @@ package goblin
 
 import (
   "testing"
+  "time"
 )
 
 type Runnable interface {
@@ -99,9 +100,7 @@ func (it *It) run(g *G) (bool) {
     //TODO: should handle errors for beforeEach
     it.parent.runBeforeEach()
 
-    //fmt.Println(it.name)
-
-    it.h()
+    runIt(g, it.h)
 
     it.parent.runAfterEach()
 
@@ -118,6 +117,12 @@ func Goblin (t *testing.T) (*G) {
     g := &G{t: t}
     g.reporter = Reporter(&DetailedReporter{})
     return g
+}
+
+
+func runIt (g *G, h func()) {
+    defer timeTrack(time.Now(), g)
+    h()
 }
 
 
@@ -155,4 +160,9 @@ func (g *G) AfterEach(h func()) {
 
 func (g *G) Assert(src int) (*Assertion) {
     return &Assertion{src: src , it: g.currentIt}
+}
+
+
+func timeTrack(start time.Time, g *G) {
+        g.reporter.itTook(time.Since(start))
 }
