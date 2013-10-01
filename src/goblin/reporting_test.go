@@ -99,12 +99,10 @@ func TestReportingTime(t *testing.T) {
             })
             g.It("Foo", func() {
                 time.Sleep(5 * time.Millisecond)
-                g.Assert(0).Equals(1)
             })
             g.Describe("Two", func() {
                 g.It("Bar", func() {
                     time.Sleep(5 * time.Millisecond)
-                    g.Assert(0).Equals(0)
                 })
             })
 	})
