@@ -4,18 +4,21 @@ import (
     "strings"
     "fmt"
     "strconv"
+    "time"
 )
 type Reporter interface {
     beginDescribe(string)
     endDescribe()
     begin()
     end()
+    itTook(time.Duration)
     itFailed(string)
     itPassed(string)
 }
 
 type DetailedReporter struct {
     level, failed, passed int
+    executionTime time.Duration
 }
 
 func red(text string) string {
@@ -46,6 +49,10 @@ func (r *DetailedReporter) beginDescribe(name string) {
 
 func (r *DetailedReporter) endDescribe() {
     r.level--
+}
+
+func (r *DetailedReporter) itTook(duration time.Duration) {
+    r.executionTime = duration
 }
 
 func (r *DetailedReporter) itFailed(name string) {
