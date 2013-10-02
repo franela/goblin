@@ -12,6 +12,7 @@ type FakeReporter struct {
 	passes []string
 	ends int
         executionTime time.Duration
+        totalExecutionTime time.Duration
     beginFlag, endFlag bool
 }
 
@@ -33,6 +34,7 @@ func (r *FakeReporter) itPassed(name string) {
 
 func (r *FakeReporter) itTook(duration time.Duration) {
     r.executionTime = duration
+    r.totalExecutionTime += duration
 }
 
 func (r *FakeReporter) begin() {
@@ -106,4 +108,8 @@ func TestReportingTime(t *testing.T) {
                 })
             })
 	})
+
+        if int64(reporter.totalExecutionTime / time.Millisecond) < 10 || int64(reporter.totalExecutionTime / time.Millisecond) >= 11 {
+            t.FailNow()
+        }
 }

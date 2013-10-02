@@ -18,7 +18,7 @@ type Reporter interface {
 
 type DetailedReporter struct {
     level, failed, passed int
-    executionTime time.Duration
+    executionTime, totalExecutionTime time.Duration
 }
 
 func red(text string) string {
@@ -53,6 +53,7 @@ func (r *DetailedReporter) endDescribe() {
 
 func (r *DetailedReporter) itTook(duration time.Duration) {
     r.executionTime = duration
+    r.totalExecutionTime += duration
 }
 
 func (r *DetailedReporter) itFailed(name string) {
@@ -69,5 +70,5 @@ func (r *DetailedReporter) begin() {
 }
 
 func (r *DetailedReporter) end() {
-    fmt.Printf("\n\n \033[32m%d tests complete\033[0m\n \033[31m%d tests failed\033[0m\n\n", r.passed, r.failed)
+    fmt.Printf("\n\n \033[32m%d tests complete \033[0m \033[1;30m(%dms)\033[0m\n \033[31m%d tests failed\033[0m\n\n", r.passed, r.totalExecutionTime / time.Millisecond, r.failed)
 }
