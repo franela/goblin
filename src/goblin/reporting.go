@@ -4,18 +4,21 @@ import (
     "strings"
     "fmt"
     "strconv"
+    "time"
 )
 type Reporter interface {
     beginDescribe(string)
     endDescribe()
     begin()
     end()
+    itTook(time.Duration)
     itFailed(string)
     itPassed(string)
 }
 
 type DetailedReporter struct {
     level, failed, passed int
+    executionTime, totalExecutionTime time.Duration
 }
 
 func red(text string) string {
@@ -48,6 +51,11 @@ func (r *DetailedReporter) endDescribe() {
     r.level--
 }
 
+func (r *DetailedReporter) itTook(duration time.Duration) {
+    r.executionTime = duration
+    r.totalExecutionTime += duration
+}
+
 func (r *DetailedReporter) itFailed(name string) {
     r.failed++
     r.print(red(strconv.Itoa(r.failed)+") "+name))
@@ -62,5 +70,5 @@ func (r *DetailedReporter) begin() {
 }
 
 func (r *DetailedReporter) end() {
-    fmt.Printf("\n\n \033[32m%d tests complete\033[0m\n \033[31m%d tests failed\033[0m\n\n", r.passed, r.failed)
+    fmt.Printf("\n\n \033[32m%d tests complete \033[0m \033[1;30m(%dms)\033[0m\n \033[31m%d tests failed\033[0m\n\n", r.passed, r.totalExecutionTime / time.Millisecond, r.failed)
 }
