@@ -70,5 +70,9 @@ func (r *DetailedReporter) begin() {
 }
 
 func (r *DetailedReporter) end() {
-    fmt.Printf("\n\n \033[32m%d tests complete \033[0m \033[1;30m(%dms)\033[0m\n \033[31m%d tests failed\033[0m\n\n", r.passed, r.totalExecutionTime / time.Millisecond, r.failed)
+    fmt.Printf("\n\n \033[32m%d tests complete\033[0m \033[90m(%d ms)\033[0m\n", r.passed, r.totalExecutionTime / time.Millisecond)
+
+    if r.failed > 0 {
+      fmt.Printf(" \033[31m%d tests failed\033[0m\n\n", r.failed)
+    }
 }
