@@ -3,7 +3,7 @@ package goblin
 import (
 	"testing"
 	"reflect"
-        "time"
+  "time"
 )
 
 type FakeReporter struct {
@@ -109,7 +109,7 @@ func TestReportingTime(t *testing.T) {
             })
 	})
 
-        if int64(reporter.totalExecutionTime / time.Millisecond) < 10 || int64(reporter.totalExecutionTime / time.Millisecond) >= 11 {
-            t.FailNow()
-        }
+  if int64(reporter.totalExecutionTime / time.Millisecond) < 10 {
+      t.FailNow()
+  }
 }
