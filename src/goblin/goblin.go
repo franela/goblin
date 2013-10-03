@@ -137,9 +137,14 @@ func (g *G) SetReporter(r Reporter) {
     g.reporter = r
 }
 
-func (g *G) It(name string, h func()) {
-    it := &It{name:name, h:h, parent:g.parent}
-    g.parent.children = append(g.parent.children, Runnable(it))
+func (g *G) It(name string, h ...func()) {
+    var it Runnable
+    if len(h) > 0 {
+        it = &It{name:name, h:h[0], parent:g.parent}
+        g.parent.children = append(g.parent.children, Runnable(it))
+    } else {
+        g.reporter.itIsPending(name)
+    }
 }
 
 func (g *G) Before(h func()) {

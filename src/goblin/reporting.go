@@ -14,10 +14,11 @@ type Reporter interface {
     itTook(time.Duration)
     itFailed(string)
     itPassed(string)
+    itIsPending(string)
 }
 
 type DetailedReporter struct {
-    level, failed, passed int
+    level, failed, passed, pending int
     executionTime, totalExecutionTime time.Duration
 }
 
@@ -27,6 +28,10 @@ func red(text string) string {
 
 func gray(text string) string {
     return "\033[90m" + text + "\033[0m"
+}
+
+func cyan(text string) string {
+    return "\033[36m" + text + "\033[0m"
 }
 
 func (r *DetailedReporter) getSpace() (string) {
@@ -66,6 +71,11 @@ func (r *DetailedReporter) itPassed(name string) {
     r.printWithCheck(gray(name))
 }
 
+func (r *DetailedReporter) itIsPending(name string) {
+    r.pending++
+    r.print(cyan("- "+name))
+}
+
 func (r *DetailedReporter) begin() {
 }
 
@@ -74,5 +84,9 @@ func (r *DetailedReporter) end() {
 
     if r.failed > 0 {
       fmt.Printf(" \033[31m%d tests failed\033[0m\n\n", r.failed)
+    }
+
+    if r.pending > 0 {
+        fmt.Printf(" \033[36m%d test(s) pending\033[0m\n\n", r.pending)
     }
 }
