@@ -93,13 +93,12 @@ type It struct {
     name string
     parent *Describe
     failed bool
-    pending bool
 }
 
 func (it *It) run(g *G) (bool) {
     g.currentIt = it
 
-    if it.pending {
+    if it.h == nil {
         g.reporter.itIsPending(it.name)
         return true
     }
@@ -144,12 +143,11 @@ func (g *G) SetReporter(r Reporter) {
 }
 
 func (g *G) It(name string, h ...func()) {
-    var it Runnable
+    it := &It{name:name, parent:g.parent}
     if len(h) > 0 {
-        it = &It{name:name, h:h[0], parent:g.parent}
+        it.h = h[0]
         g.parent.children = append(g.parent.children, Runnable(it))
     } else {
-        it = &It{name:name, parent:g.parent, pending: true}
         g.parent.children = append(g.parent.children, Runnable(it))
     }
 }
