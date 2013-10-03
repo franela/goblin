@@ -93,10 +93,16 @@ type It struct {
     name string
     parent *Describe
     failed bool
+    pending bool
 }
 
 func (it *It) run(g *G) (bool) {
     g.currentIt = it
+
+    if it.pending {
+        g.reporter.itIsPending(it.name)
+        return true
+    }
     //TODO: should handle errors for beforeEach
     it.parent.runBeforeEach()
 
@@ -143,7 +149,8 @@ func (g *G) It(name string, h ...func()) {
         it = &It{name:name, h:h[0], parent:g.parent}
         g.parent.children = append(g.parent.children, Runnable(it))
     } else {
-        g.reporter.itIsPending(name)
+        it = &It{name:name, parent:g.parent, pending: true}
+        g.parent.children = append(g.parent.children, Runnable(it))
     }
 }
 
