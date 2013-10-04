@@ -39,6 +39,7 @@ type Describe struct {
     afters []func()
     afterEach []func()
     beforeEach []func()
+    hasTests bool
     parent *Describe
 }
 
@@ -69,8 +70,10 @@ func (d *Describe) run(g *G) (bool) {
 
     failed := false
 
-    for _, b := range d.befores {
-        b()
+    if d.hasTests {
+        for _, b := range d.befores {
+            b()
+        }
     }
 
     for _, r := range d.children {
@@ -79,8 +82,10 @@ func (d *Describe) run(g *G) (bool) {
         }
     }
 
-    for _, a := range d.afters {
-        a()
+    if d.hasTests {
+        for _, a := range d.afters {
+            a()
+        }
     }
 
     g.reporter.endDescribe()
@@ -139,7 +144,15 @@ func (g *G) SetReporter(r Reporter) {
 
 func (g *G) It(name string, h func()) {
     it := &It{name:name, h:h, parent:g.parent}
+    notifyParents(g.parent)
     g.parent.children = append(g.parent.children, Runnable(it))
+}
+
+func notifyParents(d *Describe) {
+    d.hasTests = true
+    if d.parent != nil {
+        notifyParents(d.parent)
+    }
 }
 
 func (g *G) Before(h func()) {

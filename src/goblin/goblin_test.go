@@ -92,3 +92,48 @@ func TestMultipleDescribes(t *testing.T) {
         t.Fatal()
     }
 }
+
+
+func TestNotRunBeforesOrAfters(t *testing.T) {
+    fakeTest := testing.T{}
+
+    g := Goblin(&fakeTest)
+    var count int
+
+    g.Describe("Numbers", func() {
+        g.Before(func() {
+            count++
+        })
+        g.BeforeEach(func() {
+            count++
+        })
+
+        g.After(func() {
+            count++
+        })
+        g.AfterEach(func() {
+            count++
+        })
+
+        g.Describe("Letters", func() {
+            g.Before(func() {
+                count++
+            })
+            g.BeforeEach(func() {
+                count++
+            })
+
+            g.After(func() {
+                count++
+            })
+            g.AfterEach(func() {
+                count++
+            })
+        })
+
+    })
+
+    if count != 0 {
+        t.Fatal()
+    }
+}
