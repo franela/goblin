@@ -97,6 +97,11 @@ type It struct {
 
 func (it *It) run(g *G) (bool) {
     g.currentIt = it
+
+    if it.h == nil {
+        g.reporter.itIsPending(it.name)
+        return false
+    }
     //TODO: should handle errors for beforeEach
     it.parent.runBeforeEach()
 
@@ -137,9 +142,14 @@ func (g *G) SetReporter(r Reporter) {
     g.reporter = r
 }
 
-func (g *G) It(name string, h func()) {
-    it := &It{name:name, h:h, parent:g.parent}
-    g.parent.children = append(g.parent.children, Runnable(it))
+func (g *G) It(name string, h ...func()) {
+    it := &It{name:name, parent:g.parent}
+    if len(h) > 0 {
+        it.h = h[0]
+        g.parent.children = append(g.parent.children, Runnable(it))
+    } else {
+        g.parent.children = append(g.parent.children, Runnable(it))
+    }
 }
 
 func (g *G) Before(h func()) {

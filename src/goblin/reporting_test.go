@@ -10,6 +10,7 @@ type FakeReporter struct {
 	describes []string
 	fails []string
 	passes []string
+        pending []string
 	ends int
         executionTime time.Duration
         totalExecutionTime time.Duration
@@ -30,6 +31,10 @@ func (r *FakeReporter) itFailed(name string) {
 
 func (r *FakeReporter) itPassed(name string) {
 	r.passes = append(r.passes, name)
+}
+
+func (r *FakeReporter) itIsPending(name string) {
+    r.pending = append(r.pending, name)
 }
 
 func (r *FakeReporter) itTook(duration time.Duration) {
@@ -112,4 +117,24 @@ func TestReportingTime(t *testing.T) {
   if int64(reporter.totalExecutionTime / time.Millisecond) < 10 {
       t.FailNow()
   }
+}
+
+func TestReportingPending(t *testing.T) {
+	fakeTest := &testing.T{}
+	reporter := FakeReporter{}
+	fakeReporter := Reporter(&reporter)
+
+	g := Goblin(fakeTest)
+	g.SetReporter(fakeReporter)
+
+	g.Describe("One", func() {
+            g.It("One")
+            g.Describe("Two", func() {
+                g.It("Two")
+            })
+	})
+
+    if !reflect.DeepEqual(reporter.pending, []string{"One", "Two"}) {
+            t.FailNow()
+    }
 }

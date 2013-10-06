@@ -92,3 +92,24 @@ func TestMultipleDescribes(t *testing.T) {
         t.Fatal()
     }
 }
+
+
+func TestPending(t *testing.T) {
+    fakeTest := testing.T{}
+
+    g := Goblin(&fakeTest)
+
+    g.Describe("Numbers", func() {
+
+        g.It("Should add numbers")
+
+        g.Describe("Substraction", func() {
+           g.It("Should substract numbers")
+        })
+
+    })
+
+    if fakeTest.Failed() {
+        t.Fatal()
+    }
+}
