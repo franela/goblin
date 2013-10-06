@@ -100,7 +100,7 @@ func (it *It) run(g *G) (bool) {
 
     if it.h == nil {
         g.reporter.itIsPending(it.name)
-        return true
+        return false
     }
     //TODO: should handle errors for beforeEach
     it.parent.runBeforeEach()
