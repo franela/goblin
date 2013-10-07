@@ -17,11 +17,11 @@ func TestBefore(t *testing.T) {
         })
 
         g.It("Should have called before", func() {
-            g.Assert(before).Equals(1)
+            g.Assert(before).Equal(1)
         })
 
         g.It("Should have called before only once", func() {
-            g.Assert(before).Equals(1)
+            g.Assert(before).Equal(1)
         })
     })
 
@@ -49,7 +49,7 @@ func TestMultipleBefore(t *testing.T) {
         })
 
         g.It("Should have called all the registered before", func() {
-            g.Assert(before).Equals(2)
+            g.Assert(before).Equal(2)
         })
     })
 
@@ -77,11 +77,11 @@ func TestNestedBefore(t *testing.T) {
             })
 
             g.It("Should have called all the registered before", func() {
-                g.Assert(before).Equals(2)
+                g.Assert(before).Equal(2)
             })
 
             g.It("Should have called all the registered before only once", func() {
-                g.Assert(before).Equals(2)
+                g.Assert(before).Equal(2)
             })
         })
 
@@ -106,11 +106,11 @@ func TestAfter(t *testing.T) {
         })
 
         g.It("Should call after only once", func() {
-            g.Assert(after).Equals(0)
+            g.Assert(after).Equal(0)
         })
 
         g.It("Should call after only once", func() {
-            g.Assert(after).Equals(0)
+            g.Assert(after).Equal(0)
         })
     })
 
@@ -137,7 +137,7 @@ func TestMultipleAfter(t *testing.T) {
         })
 
         g.It("Should call all the registered after", func() {
-            g.Assert(after).Equals(0)
+            g.Assert(after).Equal(0)
         })
     })
 
@@ -164,11 +164,11 @@ func TestNestedAfter(t *testing.T) {
             })
 
             g.It("Should call all the registered after", func() {
-                g.Assert(after).Equals(0)
+                g.Assert(after).Equal(0)
             })
 
             g.It("Should have called all the registered after only once", func() {
-                g.Assert(after).Equals(0)
+                g.Assert(after).Equal(0)
             })
         })
 

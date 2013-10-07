@@ -17,11 +17,11 @@ func TestBeforeEach(t *testing.T) {
         })
 
         g.It("Should have called beforeEach", func() {
-            g.Assert(before).Equals(1)
+            g.Assert(before).Equal(1)
         })
 
         g.It("Should have called beforeEach also for this one", func() {
-            g.Assert(before).Equals(2)
+            g.Assert(before).Equal(2)
         })
     })
 
@@ -48,7 +48,7 @@ func TestMultipleBeforeEach(t *testing.T) {
         })
 
         g.It("Should have called all the registered beforeEach", func() {
-            g.Assert(before).Equals(2)
+            g.Assert(before).Equal(2)
         })
     })
 
@@ -76,11 +76,11 @@ func TestNestedBeforeEach(t *testing.T) {
             })
 
             g.It("Should have called all the registered beforeEach", func() {
-                g.Assert(before).Equals(2)
+                g.Assert(before).Equal(2)
             })
 
             g.It("Should have called all the registered beforeEach also for this one", func() {
-                g.Assert(before).Equals(4)
+                g.Assert(before).Equal(4)
             })
         })
 
@@ -104,11 +104,11 @@ func TestAfterEach(t *testing.T) {
         })
 
         g.It("Should call afterEach after this test", func() {
-            g.Assert(after).Equals(0)
+            g.Assert(after).Equal(0)
         })
 
         g.It("Should have called afterEach before this test ", func() {
-            g.Assert(after).Equals(1)
+            g.Assert(after).Equal(1)
         })
     })
 
@@ -135,7 +135,7 @@ func TestMultipleAfterEach(t *testing.T) {
         })
 
         g.It("Should call all the registered afterEach", func() {
-            g.Assert(after).Equals(0)
+            g.Assert(after).Equal(0)
         })
     })
 
@@ -163,11 +163,11 @@ func TestNestedAfterEach(t *testing.T) {
             })
 
             g.It("Should call all the registered afterEach", func() {
-                g.Assert(after).Equals(0)
+                g.Assert(after).Equal(0)
             })
 
             g.It("Should have called all the registered aftearEach", func() {
-                g.Assert(after).Equals(2)
+                g.Assert(after).Equal(2)
             })
         })
 
