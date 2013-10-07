@@ -11,7 +11,7 @@ func TestAddNumbersSucceed(t *testing.T) {
     g.Describe("Numbers", func() {
         g.It("Should add numbers", func() {
             sum := 1+1
-            g.Assert(sum).Equals(2)
+            g.Assert(sum).Equal(2)
         })
     })
 
@@ -28,7 +28,7 @@ func TestAddNumbersFails(t *testing.T) {
     g.Describe("Numbers", func() {
         g.It("Should add numbers", func() {
             sum := 1+1
-            g.Assert(sum).Equals(4)
+            g.Assert(sum).Equal(4)
         })
     })
 
@@ -48,12 +48,12 @@ func TestMultipleIts(t *testing.T) {
     g.Describe("Numbers", func() {
         g.It("Should add numbers", func() {
             sum := 1+1
-            g.Assert(sum).Equals(4)
+            g.Assert(sum).Equal(4)
         })
 
         g.It("Should add numbers", func() {
             sum := 1+1
-            g.Assert(sum).Equals(2)
+            g.Assert(sum).Equal(2)
         })
     })
 
@@ -75,14 +75,14 @@ func TestMultipleDescribes(t *testing.T) {
         g.Describe("Addition", func() {
            g.It("Should add numbers", func() {
                 sum := 1+1
-                g.Assert(sum).Equals(2)
+                g.Assert(sum).Equal(2)
             })
         })
 
         g.Describe("Substraction", func() {
             g.It("Should substract numbers ", func() {
                 sub := 5-5
-                g.Assert(sub).Equals(1)
+                g.Assert(sub).Equal(1)
             })
         })
     })

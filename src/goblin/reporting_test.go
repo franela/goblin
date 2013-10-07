@@ -60,11 +60,11 @@ func TestReporting(t *testing.T) {
 
 	g.Describe("One", func() {
 		g.It("Foo", func() {
-			g.Assert(0).Equals(1)
+			g.Assert(0).Equal(1)
 		})
 		g.Describe("Two", func() {
 			g.It("Bar", func() {
-				g.Assert(0).Equals(0)
+				g.Assert(0).Equal(0)
 			})
 		})
 	})
