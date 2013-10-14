@@ -7,7 +7,7 @@ import (
 
 type Assertion struct {
   src interface{}
-  it *It
+  fail func(message string, callerSkip ...int)
 }
 
 func objectsAreEqual(a, b interface{}) bool {
@@ -28,6 +28,6 @@ func objectsAreEqual(a, b interface{}) bool {
 
 func (a *Assertion) Equal(dst interface{}) {
     if !objectsAreEqual(a.src, dst) {
-        a.it.failed = true
+        a.fail("")
     }
 }
