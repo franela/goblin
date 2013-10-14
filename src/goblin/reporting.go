@@ -11,14 +11,24 @@ type Reporter interface {
     endDescribe()
     begin()
     end()
+    failure(string, string)
     itTook(time.Duration)
     itFailed(string)
     itPassed(string)
     itIsPending(string)
 }
 
+type Failure struct {
+    file string
+    line int
+    testName string
+    message string
+    stackTrace string
+}
+
 type DetailedReporter struct {
     level, failed, passed, pending int
+    failures []*Failure
     executionTime, totalExecutionTime time.Duration
 }
 
@@ -38,9 +48,16 @@ func (r *DetailedReporter) getSpace() (string) {
     return strings.Repeat(" ", (r.level+1)*2)
 }
 
+func (r *DetailedReporter) failure(msg, testName string ) {
+    file, line := ResolveCaller()
+    stack := ResolveStack()
+    r.failures = append(r.failures, &Failure{file:file, line:line, stackTrace: stack, message:msg, testName: testName})
+}
+
 func (r *DetailedReporter) print(text string) {
     fmt.Printf("%v%v\n", r.getSpace(), text)
 }
+
 
 func (r *DetailedReporter) printWithCheck(text string) {
     fmt.Printf("%v\033[32m\u2713\033[0m %v\n", r.getSpace(), text)
@@ -82,11 +99,17 @@ func (r *DetailedReporter) begin() {
 func (r *DetailedReporter) end() {
     fmt.Printf("\n\n \033[32m%d tests complete\033[0m \033[90m(%d ms)\033[0m\n", r.passed, r.totalExecutionTime / time.Millisecond)
 
-    if r.failed > 0 {
-      fmt.Printf(" \033[31m%d tests failed\033[0m\n\n", r.failed)
-    }
-
     if r.pending > 0 {
         fmt.Printf(" \033[36m%d test(s) pending\033[0m\n\n", r.pending)
+    }
+
+    if len(r.failures) > 0 {
+        fmt.Printf("%s \n\n", red(fmt.Sprintf(" %d tests failed:", len(r.failures))))
+
+    }
+
+    for i, failure := range r.failures {
+        fmt.Printf("  %d) %s:\n\n", i+1, failure.testName)
+        fmt.Printf("    %s\n", red(failure.message))
     }
 }

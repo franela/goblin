@@ -3,7 +3,7 @@ package goblin
 import (
 	"testing"
 	"reflect"
-  "time"
+        "time"
 )
 
 type FakeReporter struct {
@@ -12,6 +12,7 @@ type FakeReporter struct {
 	passes []string
         pending []string
 	ends int
+        failures int
         executionTime time.Duration
         totalExecutionTime time.Duration
     beginFlag, endFlag bool
@@ -23,6 +24,10 @@ func (r *FakeReporter) beginDescribe(name string) {
 
 func (r *FakeReporter) endDescribe() {
 	r.ends++
+}
+
+func (r *FakeReporter) failure(msg, testName string) {
+    r.failures++;
 }
 
 func (r *FakeReporter) itFailed(name string) {
@@ -135,6 +140,27 @@ func TestReportingPending(t *testing.T) {
 	})
 
     if !reflect.DeepEqual(reporter.pending, []string{"One", "Two"}) {
+            t.FailNow()
+    }
+}
+
+
+func TestReportingErrors(t *testing.T) {
+	fakeTest := &testing.T{}
+	reporter := FakeReporter{}
+	fakeReporter := Reporter(&reporter)
+
+	g := Goblin(fakeTest)
+	g.SetReporter(fakeReporter)
+
+	g.Describe("Numbers", func() {
+            g.It("Should make reporting add two errors ", func() {
+                g.Assert(0).Equal(1)
+                g.Assert(0).Equal(1)
+            })
+	})
+
+    if reporter.failures != 2  {
             t.FailNow()
     }
 }
