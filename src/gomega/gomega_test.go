@@ -1,8 +1,9 @@
-package goblin
+package gomega
 
 import (
     "testing"
     . "github.com/onsi/gomega"
+    . "goblin"
 )
 
 func TestGoMegaIntegration(t *testing.T) {
