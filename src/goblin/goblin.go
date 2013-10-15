@@ -201,10 +201,14 @@ func (g *G) AfterEach(h func()) {
 }
 
 func (g *G) Assert(src interface{}) (*Assertion) {
-    return &Assertion{src: src , it: g.currentIt}
+    return &Assertion{src: src , fail: g.Fail}
 }
 
 
 func timeTrack(start time.Time, g *G) {
-        g.reporter.itTook(time.Since(start))
+    g.reporter.itTook(time.Since(start))
+}
+
+func (g *G) Fail(message string, callerSkip ...int) {
+    g.currentIt.failed(message)
 }

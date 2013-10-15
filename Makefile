@@ -1,3 +1,4 @@
 export GOPATH=$(shell pwd)
 test:
-	go test -v ./...
+	go get github.com/onsi/gomega
+	go test -v goblin
