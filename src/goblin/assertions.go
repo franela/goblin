@@ -28,6 +28,6 @@ func objectsAreEqual(a, b interface{}) bool {
 
 func (a *Assertion) Equal(dst interface{}) {
     if !objectsAreEqual(a.src, dst) {
-        a.it.failed = true
+        a.it.failed(fmt.Sprintf("%v", a.src)+" does not equal "+fmt.Sprintf("%v", dst))
     }
 }
