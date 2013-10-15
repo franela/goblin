@@ -26,7 +26,7 @@ func (r *FakeReporter) endDescribe() {
 	r.ends++
 }
 
-func (r *FakeReporter) failure(msg, testName string) {
+func (r *FakeReporter) failure(failure *Failure) {
     r.failures++;
 }
 

@@ -93,11 +93,18 @@ func (d *Describe) run(g *G) (bool) {
     return failed != ""
 }
 
+type Failure struct {
+    file string
+    line int
+    testName string
+    message string
+}
+
 type It struct {
     h func()
     name string
     parent *Describe
-    failures []string
+    failures []*Failure
     reporter Reporter
 }
 
@@ -123,7 +130,7 @@ func (it *It) run(g *G) (bool) {
     if failed {
         g.reporter.itFailed(it.name)
         for _, failure := range it.failures {
-            g.reporter.failure(failure, it.parent.name + " " + it.name)
+            g.reporter.failure(failure)
         }
     } else {
         g.reporter.itPassed(it.name)
@@ -133,7 +140,8 @@ func (it *It) run(g *G) (bool) {
 }
 
 func (it *It) failed(msg string) {
-    it.failures = append(it.failures, msg)
+    file, line := ResolveCaller(3)
+    it.failures = append(it.failures, &Failure{file:file, line:line, message:msg, testName: it.parent.name + " " + it.name})
 }
 
 func Goblin (t *testing.T) (*G) {

@@ -11,20 +11,13 @@ type Reporter interface {
     endDescribe()
     begin()
     end()
-    failure(string, string)
+    failure(*Failure)
     itTook(time.Duration)
     itFailed(string)
     itPassed(string)
     itIsPending(string)
 }
 
-type Failure struct {
-    file string
-    line int
-    testName string
-    message string
-    stackTrace string
-}
 
 type DetailedReporter struct {
     level, failed, passed, pending int
@@ -48,10 +41,8 @@ func (r *DetailedReporter) getSpace() (string) {
     return strings.Repeat(" ", (r.level+1)*2)
 }
 
-func (r *DetailedReporter) failure(msg, testName string ) {
-    file, line := ResolveCaller()
-    stack := ResolveStack()
-    r.failures = append(r.failures, &Failure{file:file, line:line, stackTrace: stack, message:msg, testName: testName})
+func (r *DetailedReporter) failure(failure *Failure) {
+    r.failures = append(r.failures, failure)
 }
 
 func (r *DetailedReporter) print(text string) {
@@ -110,6 +101,6 @@ func (r *DetailedReporter) end() {
 
     for i, failure := range r.failures {
         fmt.Printf("  %d) %s:\n\n", i+1, failure.testName)
-        fmt.Printf("    %s\n", red(failure.message))
+        fmt.Printf("    %s %s\n", red(failure.message), gray(fmt.Sprintf("(%s:%d)", failure.file, failure.line)))
     }
 }

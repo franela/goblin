@@ -4,11 +4,7 @@ import (
         "runtime"
 )
 
-func ResolveCaller() (string, int) {
-    _, file, line, _ := runtime.Caller(1)
+func ResolveCaller(depth int) (string, int) {
+    _, file, line, _ := runtime.Caller(depth)
     return file, line
-}
-
-func ResolveStack() string {
-    return ""
 }
