@@ -68,7 +68,7 @@ func (d *Describe) runAfterEach() {
 func (d *Describe) run(g *G) (bool) {
     g.reporter.beginDescribe(d.name)
 
-    failed := false
+    failed := ""
 
     if d.hasTests {
         for _, b := range d.befores {
@@ -78,7 +78,7 @@ func (d *Describe) run(g *G) (bool) {
 
     for _, r := range d.children {
         if r.run(g) {
-            failed = true
+            failed = "true"
         }
     }
 
@@ -90,14 +90,22 @@ func (d *Describe) run(g *G) (bool) {
 
     g.reporter.endDescribe()
 
-    return failed
+    return failed != ""
+}
+
+type Failure struct {
+    file string
+    line int
+    testName string
+    message string
 }
 
 type It struct {
     h func()
     name string
     parent *Describe
-    failed bool
+    failures []*Failure
+    reporter Reporter
 }
 
 func (it *It) run(g *G) (bool) {
@@ -114,13 +122,26 @@ func (it *It) run(g *G) (bool) {
 
     it.parent.runAfterEach()
 
-    if it.failed {
+    failed := false
+    if len(it.failures) != 0 {
+        failed = true
+    }
+
+    if failed {
         g.reporter.itFailed(it.name)
+        for _, failure := range it.failures {
+            g.reporter.failure(failure)
+        }
     } else {
         g.reporter.itPassed(it.name)
     }
-    return it.failed
+    return failed
 
+}
+
+func (it *It) failed(msg string) {
+    file, line := ResolveCaller(3)
+    it.failures = append(it.failures, &Failure{file:file, line:line, message:msg, testName: it.parent.name + " " + it.name})
 }
 
 func Goblin (t *testing.T) (*G) {
@@ -148,7 +169,7 @@ func (g *G) SetReporter(r Reporter) {
 }
 
 func (g *G) It(name string, h ...func()) {
-    it := &It{name:name, parent:g.parent}
+    it := &It{name:name, parent:g.parent, reporter: g.reporter}
     notifyParents(g.parent)
     if len(h) > 0 {
         it.h = h[0]
@@ -179,7 +200,7 @@ func (g *G) AfterEach(h func()) {
     g.parent.afterEach = append(g.parent.afterEach, h)
 }
 
-func (g *G) Assert(src int) (*Assertion) {
+func (g *G) Assert(src interface{}) (*Assertion) {
     return &Assertion{src: src , it: g.currentIt}
 }
 
