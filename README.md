@@ -3,6 +3,8 @@ Goblin
 
 A [Mocha](http://visionmedia.github.io/mocha/) like BDD testing framework for Go
 
+No extensive documentation nor complicated steps to get it running
+
 Run tests as usual with `go test`
 
 Colorful reports and beautiful syntax
