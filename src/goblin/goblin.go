@@ -153,7 +153,7 @@ func runIt (g *G, h func()) {
     // We do this to recover from panic, which is how we know that the test failed.
     defer func() {
         if r := recover(); r != nil {
-            file, line := ResolveCaller(3)
+            file, line := ResolveCaller()
             e := r.(string)
             g.currentIt.failed(e, file, line)
         }
