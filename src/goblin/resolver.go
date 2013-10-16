@@ -1,7 +1,7 @@
 package goblin
 
 import (
-        "runtime"
+    "runtime"
 )
 
 func ResolveCaller(depth int) (string, int) {

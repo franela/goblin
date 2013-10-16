@@ -7,7 +7,6 @@ import (
 
 type Assertion struct {
   src interface{}
-  fail func(message string, callerSkip ...int)
 }
 
 func objectsAreEqual(a, b interface{}) bool {
@@ -28,6 +27,6 @@ func objectsAreEqual(a, b interface{}) bool {
 
 func (a *Assertion) Equal(dst interface{}) {
     if !objectsAreEqual(a.src, dst) {
-        a.fail(fmt.Sprintf("%v", a.src)+" does not equal "+fmt.Sprintf("%v", dst))
+        panic(fmt.Sprintf("%v", a.src)+" does not equal "+fmt.Sprintf("%v", dst))
     }
 }

@@ -160,7 +160,7 @@ func TestReportingErrors(t *testing.T) {
             })
 	})
 
-    if reporter.failures != 2  {
+    if reporter.failures != 1  {
             t.FailNow()
     }
 }
