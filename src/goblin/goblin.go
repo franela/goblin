@@ -1,8 +1,8 @@
 package goblin
 
 import (
-  "testing"
-  "time"
+    "testing"
+    "time"
 )
 
 type Runnable interface {
@@ -104,7 +104,7 @@ type It struct {
     h func()
     name string
     parent *Describe
-    failures []*Failure
+    failure *Failure
     reporter Reporter
 }
 
@@ -123,25 +123,21 @@ func (it *It) run(g *G) (bool) {
     it.parent.runAfterEach()
 
     failed := false
-    if len(it.failures) != 0 {
+    if it.failure != nil {
         failed = true
     }
 
     if failed {
         g.reporter.itFailed(it.name)
-        for _, failure := range it.failures {
-            g.reporter.failure(failure)
-        }
+        g.reporter.failure(it.failure)
     } else {
         g.reporter.itPassed(it.name)
     }
     return failed
-
 }
 
-func (it *It) failed(msg string) {
-    file, line := ResolveCaller(3)
-    it.failures = append(it.failures, &Failure{file:file, line:line, message:msg, testName: it.parent.name + " " + it.name})
+func (it *It) failed(msg, file string, line int) {
+    it.failure = &Failure{file:file, line:line, message:msg, testName: it.parent.name + " " + it.name}
 }
 
 func Goblin (t *testing.T) (*G) {
@@ -153,6 +149,15 @@ func Goblin (t *testing.T) (*G) {
 
 func runIt (g *G, h func()) {
     defer timeTrack(time.Now(), g)
+
+    // We do this to recover from panic, which is how we know that the test failed.
+    defer func() {
+        if r := recover(); r != nil {
+            file, line := ResolveCaller()
+            e := r.(string)
+            g.currentIt.failed(e, file, line)
+        }
+    }()
     h()
 }
 
@@ -201,7 +206,7 @@ func (g *G) AfterEach(h func()) {
 }
 
 func (g *G) Assert(src interface{}) (*Assertion) {
-    return &Assertion{src: src , fail: g.Fail}
+    return &Assertion{src: src}
 }
 
 
@@ -209,6 +214,6 @@ func timeTrack(start time.Time, g *G) {
     g.reporter.itTook(time.Since(start))
 }
 
-func (g *G) Fail(message string, callerSkip ...int) {
-    g.currentIt.failed(message)
+func (g *G) Fail(message string) {
+    panic(message)
 }
