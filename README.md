@@ -29,7 +29,7 @@ What do I get with it?
 - Use `Before`, `BeforeEach`, `After` and `AfterEach` for setup and teardown your tests
 - No need to remember confusing parameters in `Describe` and `It` blocks
 - Use a declarative and expressive language to write your tests
-- Plug different assertion libraries ([Gomega][https://github.com/onsi/gomega] supported so far)
+- Plug different assertion libraries ([Gomega](https://github.com/onsi/gomega) supported so far)
 - Skip your tests the same way as you would do in Mocha
 - Two line setup is all you need to get up running
 
@@ -72,7 +72,7 @@ Nice and easy, right?
 How do I use it with Gomega?
 ----------------------------
 
-Gomega is a nice assertion framework. But it doesn't provide a nice way to hook it to testing frameworks. It should just panic instead of requiring a fail function. There is an issue about that [here][https://github.com/onsi/gomega/issues/5].
+Gomega is a nice assertion framework. But it doesn't provide a nice way to hook it to testing frameworks. It should just panic instead of requiring a fail function. There is an issue about that [here](https://github.com/onsi/gomega/issues/5).
 While this is being discussed and hopefully fixed, the way to use Gomega with Goblin is:
 
 ```go
