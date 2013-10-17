@@ -103,3 +103,8 @@ TODO:
 
 We do have a couple of [issues](https://github.com/franela/goblin/issues) pending we'll be addressing soon. But feel free to
 contribute and send us PRs (with tests please :smile:).
+
+Contibutions:
+------------
+
+Special thanks to [Leandor Reox](https://github.com/leandroreox) (Leitan) for the goblin logo.
