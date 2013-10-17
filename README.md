@@ -36,23 +36,6 @@ What do I get with it?
 How do I use it?
 ----------------
 
-### Mocha's: 
-
-```javascript
-describe("Numbers", function() {
-  it("Should add two numbers", function() {
-    (1+1).should.equal(2);
-  });
-  it("Should match equal numbers", function() {
-    (2).should.equal(4);
-  });
-  it("Should substract two numbers");
-});
-```
-
-
-### Goblin's: 
-
 ```go
 g := Goblin(t)
 g.Describe("Numbers", func() {
@@ -63,14 +46,12 @@ g.Describe("Numbers", func() {
         g.Assert(2).Equal(4)
     })
     g.It("Should substract two numbers")
-
 })
-
 ```
-
 
 Ouput will be something like:
 
+![](https://github.com/marcosnils/goblin/blob/unstable/goblin_output.png?raw=true)
 
 
 Nice and easy, do you think?.
