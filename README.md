@@ -52,7 +52,7 @@ import (
 func Test(t *testing.T) {
   g := Goblin(t)
   g.Describe("Numbers", func() {
-      g.It("Should resolve the caller filename ", func() {
+      g.It("Should add two numbers ", func() {
           g.Assert(1+1).Equal(2)
       })
       g.It("Should match equal numbers", func() {
