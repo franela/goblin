@@ -71,6 +71,7 @@ g.Describe("Numbers", func() {
 
 Ouput will be something like:
 
+![](https://github.com/marcosnils/goblin/blob/unstable/goblin_output.png?raw=true)
 
 
 Nice and easy, do you think?.
