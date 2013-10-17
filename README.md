@@ -1,7 +1,7 @@
 Goblin
 ======
 
-![](https://github.com/marcosnils/goblin/blob/unstable/goblin_logo.jpg?raw=true)
+![](https://github.com/marcosnils/goblin/blob/master/goblin_logo.jpg?raw=true)
 
 A [Mocha](http://visionmedia.github.io/mocha/) like BDD testing framework for Go
 
@@ -65,7 +65,7 @@ func Test(t *testing.T) {
 
 Ouput will be something like:
 
-![](https://github.com/marcosnils/goblin/blob/unstable/goblin_output.png?raw=true)
+![](https://github.com/marcosnils/goblin/blob/master/goblin_output.png?raw=true)
 
 Nice and easy, right?
 
