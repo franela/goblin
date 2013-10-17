@@ -108,4 +108,4 @@ contribute and send us PRs (with tests please :smile:).
 Contributions:
 ------------
 
-Special thanks to [Leandor Reox](https://github.com/leandroreox) (Leitan) for the goblin logo.
+Special thanks to [Leandro Reox](https://github.com/leandroreox) (Leitan) for the goblin logo.
