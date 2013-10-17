@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/franela/goblin.png?branch=master)](https://travis-ci.org/franela/goblin)
 Goblin
 ======
 
