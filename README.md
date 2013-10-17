@@ -47,7 +47,7 @@ package foobar
 
 import (
     "testing"
-    . "goblin"
+    . "github.com/franela/goblin"
 )
 
 func Test(t *testing.T) {
@@ -81,7 +81,7 @@ package foobar
 
 import (
     "testing"
-    . "goblin"
+    . "github.com/franela/goblin"
     . "github.com/onsi/gomega"
 )
 
