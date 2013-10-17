@@ -42,6 +42,13 @@ Since ```go test``` is not currently extensive, you will have to hook Goblin to 
 adding a single test method in your test file. All your goblin tests will be implemented inside this function.
 
 ```go
+package foobar
+
+import (
+    "testing"
+    . "goblin"
+)
+
 func Test(t *testing.T) {
   g := Goblin(t)
   g.Describe("Numbers", func() {
@@ -60,8 +67,36 @@ Ouput will be something like:
 
 ![](https://github.com/marcosnils/goblin/blob/unstable/goblin_output.png?raw=true)
 
-
 Nice and easy, right?
+
+How do I use it with Gomega?
+----------------------------
+
+Gomega is a nice assertion framework. But it doesn't provide a nice way to hook it to testing frameworks. It should just panic instead of requiring a fail function. There is an issue about that [here][https://github.com/onsi/gomega/issues/5].
+While this is being discussed and hopefully fixed, the way to use Gomega with Goblin is:
+
+```go
+package foobar
+
+import (
+    "testing"
+    . "goblin"
+    . "github.com/onsi/gomega"
+)
+
+func Test(t *testing.T) {
+    g := Goblin(t)
+
+    //special hook for gomega
+    RegisterFailHandler(func(m string, _ ...int) { g.Fail(m) })
+
+    g.Describe("lala", func() {
+      g.It("lslslslsls", func() {
+        Expect(1).To(Equal(10))
+      })
+    })
+}
+```
 
 TODO:
 -----
