@@ -1,6 +1,8 @@
 Goblin
 ======
 
+![](https://github.com/marcosnils/goblin/blob/unstable/goblin_logo.jpg?raw=true)
+
 A [Mocha](http://visionmedia.github.io/mocha/) like BDD testing framework for Go
 
 No extensive documentation nor complicated steps to get it running
