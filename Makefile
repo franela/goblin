@@ -1,3 +1,3 @@
 export GOPATH=$(shell pwd)
 test:
-	go test -v goblin
+	go test -v
