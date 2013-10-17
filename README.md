@@ -36,12 +36,48 @@ What do I get with it?
 How do I use it?
 ----------------
 
-TODO: Put code example here
+### Mocha's: 
 
+```javascript
+describe("Numbers", function() {
+  it("Should add two numbers", function() {
+    (1+1).should.equal(2);
+  });
+  it("Should match equal numbers", function() {
+    (2).should.equal(4);
+  });
+  it("Should substract two numbers");
+});
+```
+
+
+### Goblin's: 
+
+```go
+g := Goblin(t)
+g.Describe("Numbers", func() {
+    g.It("Should resolve the caller filename ", func() {
+        g.Assert(1+1).Equal(2)
+    })
+    g.It("Should match equal numbers", func() {
+        g.Assert(2).Equal(4)
+    })
+    g.It("Should substract two numbers")
+
+})
+
+```
+
+
+Ouput will be something like:
+
+
+
+Nice and easy, do you think?.
 
 
 TODO:
 -----
 
-We do have a couple of [issues](https://github.com/franela/goblin/issues)pending we'd like to fix someday. Feel free to
+We do have a couple of [issues](https://github.com/franela/goblin/issues) pending we'd like to fix someday. Feel free to
 contribute and send us some PR's (with tests please :smile:)
