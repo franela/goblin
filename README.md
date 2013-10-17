@@ -63,9 +63,7 @@ g.Describe("Numbers", func() {
         g.Assert(2).Equal(4)
     })
     g.It("Should substract two numbers")
-
 })
-
 ```
 
 
