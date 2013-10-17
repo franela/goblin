@@ -26,10 +26,10 @@ What do I get with it?
 
 - Preserve the exact same syntax and behaviour as Node's Mocha
 - Nest as many `Describe` and `It` blocks as you want
-- Use `before`, `beforeEach`, `after` and `afterEach` for setup and teardown your tests
+- Use `Before`, `BeforeEach`, `After` and `AfterEach` for setup and teardown your tests
 - No need to remember confusing parameters in `Describe` and `It` blocks
 - Use a declarative and expressive language to write your tests
-- Plug different assertion libraries (Gomega supported so far)
+- Plug different assertion libraries ([Gomega][https://github.com/onsi/gomega] supported so far)
 - Skip your tests the same way as you would do in Mocha
 - Two line setup is all you need to get up running
 
@@ -38,17 +38,22 @@ What do I get with it?
 How do I use it?
 ----------------
 
+Since ```go test``` is not currently extensive, you will have to hook Goblin to it. You do that by
+adding a single test method in your test file. All your goblin tests will be implemented inside this function.
+
 ```go
-g := Goblin(t)
-g.Describe("Numbers", func() {
-    g.It("Should resolve the caller filename ", func() {
-        g.Assert(1+1).Equal(2)
-    })
-    g.It("Should match equal numbers", func() {
-        g.Assert(2).Equal(4)
-    })
-    g.It("Should substract two numbers")
-})
+func Test(t *testing.T) {
+  g := Goblin(t)
+  g.Describe("Numbers", func() {
+      g.It("Should resolve the caller filename ", func() {
+          g.Assert(1+1).Equal(2)
+      })
+      g.It("Should match equal numbers", func() {
+          g.Assert(2).Equal(4)
+      })
+      g.It("Should substract two numbers")
+  })
+}
 ```
 
 Ouput will be something like:
@@ -56,11 +61,10 @@ Ouput will be something like:
 ![](https://github.com/marcosnils/goblin/blob/unstable/goblin_output.png?raw=true)
 
 
-Nice and easy, do you think?.
-
+Nice and easy, right?
 
 TODO:
 -----
 
-We do have a couple of [issues](https://github.com/franela/goblin/issues) pending we'd like to fix someday. Feel free to
-contribute and send us some PR's (with tests please :smile:)
+We do have a couple of [issues](https://github.com/franela/goblin/issues) pending we'll be addressing soon. But feel free to
+contribute and send us PRs (with tests please :smile:).
