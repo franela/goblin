@@ -155,3 +155,19 @@ func TestNotRunBeforesOrAfters(t *testing.T) {
         t.Fatal()
     }
 }
+
+func TestFailOnError(t *testing.T) {
+    fakeTest := testing.T{}
+
+    g := Goblin(&fakeTest)
+
+    g.Describe("Numbers", func() {
+        g.It("Does something", func() {
+            panic("Something")
+        })
+    })
+
+    if !fakeTest.Failed() {
+        t.Fatal()
+    }
+}
