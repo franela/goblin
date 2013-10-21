@@ -94,8 +94,7 @@ func (d *Describe) run(g *G) (bool) {
 }
 
 type Failure struct {
-    file string
-    line int
+    stack []string
     testName string
     message string
 }
@@ -136,8 +135,8 @@ func (it *It) run(g *G) (bool) {
     return failed
 }
 
-func (it *It) failed(msg, file string, line int) {
-    it.failure = &Failure{file:file, line:line, message:msg, testName: it.parent.name + " " + it.name}
+func (it *It) failed(msg string, stack []string) {
+    it.failure = &Failure{stack:stack, message:msg, testName: it.parent.name + " " + it.name}
 }
 
 func Goblin (t *testing.T) (*G) {
@@ -153,9 +152,9 @@ func runIt (g *G, h func()) {
     // We do this to recover from panic, which is how we know that the test failed.
     defer func() {
         if r := recover(); r != nil {
-            file, line := ResolveCaller()
+            stack := ResolveStack()
             e := r.(string)
-            g.currentIt.failed(e, file, line)
+            g.currentIt.failed(e, stack)
         }
     }()
     h()
