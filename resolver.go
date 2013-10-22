@@ -6,11 +6,6 @@ import (
 )
 
 func ResolveStack() ([]string) {
-    //var filename string
-
-    //for depth:=0; !strings.HasSuffix(filename, "_test.go"); depth++ {
-        //_, filename, _, _ = runtime.Caller(depth)
-    //}
     return cleanStack(debug.Stack())
 }
 
