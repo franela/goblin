@@ -167,6 +167,14 @@ func TestFailOnError(t *testing.T) {
         })
     })
 
+    g.Describe("Errors", func() {
+        g.It("Should fail with structs ", func() {
+            var s struct{error string}
+            s.error = "Error"
+            panic(s)
+        })
+    })
+
     if !fakeTest.Failed() {
         t.Fatal()
     }
