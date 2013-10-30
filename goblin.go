@@ -3,6 +3,7 @@ package goblin
 import (
     "testing"
     "time"
+    "fmt"
 )
 
 type Runnable interface {
@@ -153,7 +154,7 @@ func runIt (g *G, h func()) {
     defer func() {
         if r := recover(); r != nil {
             stack := ResolveStack()
-            e := r.(string)
+            e := fmt.Sprintf("%v", r)
             g.currentIt.failed(e, stack)
         }
     }()
