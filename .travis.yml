@@ -1,1 +1,4 @@
 language: go
+notifications:
+  email:
+      - ionathan@gmail.com
