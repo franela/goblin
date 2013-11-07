@@ -2,3 +2,4 @@ language: go
 notifications:
   email:
       - ionathan@gmail.com
+      - marcosnils@gmail.com
