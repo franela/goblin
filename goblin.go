@@ -7,7 +7,7 @@ import (
     "fmt"
 )
 
-type Done func()
+type Done func(msg ...string)
 
 type Runnable interface {
     run(*G) (bool)
@@ -169,8 +169,12 @@ func runIt (g *G, h interface{}) {
     } else if call, ok := h.(func(Done)); ok {
         // the test is asynchronous
         g.shouldContinue = make(chan bool)
-        call(func() {
-            g.shouldContinue <- true
+        call(func(msg ...string) {
+            if len(msg) > 0 {
+                g.shouldContinue <- false
+            } else {
+                g.shouldContinue <- true
+            }
         })
         <- g.shouldContinue
     } else {

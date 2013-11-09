@@ -186,11 +186,25 @@ func TestAsync(t *testing.T) {
 
     g := Goblin(&fakeTest)
 
-    g.Describe("Numbers", func() {
-        g.It("Does something async", func(done Done) {
+    g.Describe("Async test", func() {
+        g.It("Should fail when fail is called", func(done Done) {
             go func() {
                 time.Sleep(100 * time.Millisecond)
                 g.Fail("foo is not bar")
+            }()
+        })
+
+        g.It("Should fail if done receives a parameter ", func(done Done) {
+            go func() {
+                time.Sleep(100 * time.Millisecond)
+                done("Error")
+            }()
+        })
+
+        g.It("Should pass when done is called", func(done Done) {
+            go func() {
+                time.Sleep(100 * time.Millisecond)
+                done()
             }()
         })
     })
