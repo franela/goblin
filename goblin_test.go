@@ -74,12 +74,10 @@ func TestMultipleDescribes(t *testing.T) {
 
     g := Goblin(&fakeTest)
 
-    count := 0
     g.Describe("Numbers", func() {
 
         g.Describe("Addition", func() {
            g.It("Should add numbers", func() {
-                count++
                 sum := 1+1
                 g.Assert(sum).Equal(2)
             })
@@ -87,7 +85,6 @@ func TestMultipleDescribes(t *testing.T) {
 
         g.Describe("Substraction", func() {
             g.It("Should substract numbers ", func() {
-                count++
                 sub := 5-5
                 g.Assert(sub).Equal(1)
             })
@@ -95,7 +92,7 @@ func TestMultipleDescribes(t *testing.T) {
     })
 
 
-    if count != 2 {
+    if !fakeTest.Failed() {
         t.Fatal()
     }
 }

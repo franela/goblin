@@ -171,10 +171,15 @@ func runIt (g *G, h interface{}) {
         g.currentIt.isAsync = true
         // the test is asynchronous
         g.shouldContinue = make(chan bool)
+        doneCalled := 0
         call(func(msg ...interface{}) {
             if len(msg) > 0 {
                 g.Fail(msg)
             } else {
+                doneCalled++
+                if doneCalled > 1 {
+                    g.Fail("Done called multiple times")
+                }
                 g.shouldContinue <- true
             }
         })
