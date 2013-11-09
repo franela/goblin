@@ -3,8 +3,11 @@ package goblin
 import (
     "testing"
     "time"
+    "runtime"
     "fmt"
 )
+
+type Done func(error ...interface{})
 
 type Runnable interface {
     run(*G) (bool)
@@ -101,11 +104,12 @@ type Failure struct {
 }
 
 type It struct {
-    h func()
+    h interface{}
     name string
     parent *Describe
     failure *Failure
     reporter Reporter
+    isAsync bool
 }
 
 func (it *It) run(g *G) (bool) {
@@ -147,10 +151,11 @@ func Goblin (t *testing.T) (*G) {
 }
 
 
-func runIt (g *G, h func()) {
+func runIt (g *G, h interface{}) {
     defer timeTrack(time.Now(), g)
 
     // We do this to recover from panic, which is how we know that the test failed.
+    /*
     defer func() {
         if r := recover(); r != nil {
             stack := ResolveStack()
@@ -158,7 +163,30 @@ func runIt (g *G, h func()) {
             g.currentIt.failed(e, stack)
         }
     }()
-    h()
+*/
+    if call, ok := h.(func()); ok {
+        // the test is synchronous
+        call()
+    } else if call, ok := h.(func(Done)); ok {
+        g.currentIt.isAsync = true
+        // the test is asynchronous
+        g.shouldContinue = make(chan bool)
+        doneCalled := 0
+        call(func(msg ...interface{}) {
+            if len(msg) > 0 {
+                g.Fail(msg)
+            } else {
+                doneCalled++
+                if doneCalled > 1 {
+                    g.Fail("Done called multiple times")
+                }
+                g.shouldContinue <- true
+            }
+        })
+        <- g.shouldContinue
+    } else {
+        panic("Not implemented.")
+    }
 }
 
 
@@ -167,13 +195,14 @@ type G struct {
     parent *Describe
     currentIt *It
     reporter Reporter
+    shouldContinue chan bool
 }
 
 func (g *G) SetReporter(r Reporter) {
     g.reporter = r
 }
 
-func (g *G) It(name string, h ...func()) {
+func (g *G) It(name string, h ...interface{}) {
     it := &It{name:name, parent:g.parent, reporter: g.reporter}
     notifyParents(g.parent)
     if len(h) > 0 {
@@ -206,7 +235,7 @@ func (g *G) AfterEach(h func()) {
 }
 
 func (g *G) Assert(src interface{}) (*Assertion) {
-    return &Assertion{src: src}
+    return &Assertion{src: src, fail: g.Fail}
 }
 
 
@@ -214,6 +243,14 @@ func timeTrack(start time.Time, g *G) {
     g.reporter.itTook(time.Since(start))
 }
 
-func (g *G) Fail(message string) {
-    panic(message)
+func (g *G) Fail(error interface{}) {
+    stack := ResolveStack()
+    message := fmt.Sprintf("%v", error)
+    g.currentIt.failed(message, stack)
+    if g.shouldContinue != nil {
+        g.shouldContinue <- true
+    }
+    if g.currentIt.isAsync {
+       runtime.Goexit()
+    }
 }
