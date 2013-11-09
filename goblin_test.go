@@ -2,6 +2,7 @@ package goblin
 
 import (
     "testing"
+    "time"
 )
 
 func TestAddNumbersSucceed(t *testing.T) {
@@ -163,7 +164,7 @@ func TestFailOnError(t *testing.T) {
 
     g.Describe("Numbers", func() {
         g.It("Does something", func() {
-            panic("Something")
+            g.Fail("Something")
         })
     })
 
@@ -171,7 +172,26 @@ func TestFailOnError(t *testing.T) {
         g.It("Should fail with structs ", func() {
             var s struct{error string}
             s.error = "Error"
-            panic(s)
+            g.Fail(s)
+        })
+    })
+
+    if !fakeTest.Failed() {
+        t.Fatal()
+    }
+}
+
+func TestAsync(t *testing.T) {
+    fakeTest := testing.T{}
+
+    g := Goblin(&fakeTest)
+
+    g.Describe("Numbers", func() {
+        g.It("Does something async", func(done Done) {
+            go func() {
+                time.Sleep(100 * time.Millisecond)
+                g.Fail("foo is not bar")
+            }()
         })
     })
 
