@@ -154,16 +154,6 @@ func Goblin (t *testing.T) (*G) {
 func runIt (g *G, h interface{}) {
     defer timeTrack(time.Now(), g)
 
-    // We do this to recover from panic, which is how we know that the test failed.
-    /*
-    defer func() {
-        if r := recover(); r != nil {
-            stack := ResolveStack()
-            e := fmt.Sprintf("%v", r)
-            g.currentIt.failed(e, stack)
-        }
-    }()
-*/
     chantime := make(chan bool)
     if call, ok := h.(func()); ok {
         // the test is synchronous
@@ -172,7 +162,7 @@ func runIt (g *G, h interface{}) {
        select {
          case <- chantime:
          case <- time.After(g.timeout):
-           g.Fail("Test exceeded "+fmt.Sprintf("%s", g.timeout))
+           g.Fail("Timeout exceeded "+fmt.Sprintf("%s", g.timeout))
        }
     } else if call, ok := h.(func(Done)); ok {
         g.currentIt.isAsync = true
