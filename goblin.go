@@ -109,6 +109,7 @@ type It struct {
     parent *Describe
     failure *Failure
     reporter Reporter
+    isAsync bool
 }
 
 func (it *It) run(g *G) (bool) {
@@ -167,6 +168,7 @@ func runIt (g *G, h interface{}) {
         // the test is synchronous
         call()
     } else if call, ok := h.(func(Done)); ok {
+        g.currentIt.isAsync = true
         // the test is asynchronous
         g.shouldContinue = make(chan bool)
         call(func(msg ...interface{}) {
@@ -243,5 +245,7 @@ func (g *G) Fail(error interface{}) {
     if g.shouldContinue != nil {
         g.shouldContinue <- true
     }
-    runtime.Goexit()
+    if g.currentIt.isAsync {
+       runtime.Goexit()
+    }
 }
