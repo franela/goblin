@@ -13,7 +13,7 @@ func ResolveStack() ([]string) {
 func cleanStack(stack []byte) []string {
     arrayStack := strings.Split(string(stack), "\n")
     var finalStack []string
-    for i:=3; i<len(arrayStack); i++ {
+    for i:=5; i<len(arrayStack); i++ {
         if strings.Contains(arrayStack[i], ".go") {
             finalStack = append(finalStack, arrayStack[i])
         }
