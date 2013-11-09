@@ -145,7 +145,7 @@ func (it *It) failed(msg string, stack []string) {
 }
 
 func Goblin (t *testing.T) (*G) {
-    g := &G{t: t}
+  g := &G{t: t, timeout: 5 * time.Second}
     g.reporter = Reporter(&DetailedReporter{})
     return g
 }
@@ -164,9 +164,16 @@ func runIt (g *G, h interface{}) {
         }
     }()
 */
+    chantime := make(chan bool)
     if call, ok := h.(func()); ok {
         // the test is synchronous
-        call()
+       go func() { call(); chantime <- true  }() 
+
+       select {
+         case <- chantime:
+         case <- time.After(g.timeout):
+           g.Fail("Test exceeded "+fmt.Sprintf("%s", g.timeout))
+       }
     } else if call, ok := h.(func(Done)); ok {
         g.currentIt.isAsync = true
         // the test is asynchronous
@@ -195,8 +202,13 @@ type G struct {
     t *testing.T
     parent *Describe
     currentIt *It
+    timeout time.Duration
     reporter Reporter
     shouldContinue chan bool
+}
+
+func (g *G) setTimeout(timeout time.Duration) {
+  g.timeout = timeout
 }
 
 func (g *G) SetReporter(r Reporter) {
