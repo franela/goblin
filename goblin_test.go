@@ -193,6 +193,9 @@ func TestAsync(t *testing.T) {
     g := Goblin(&fakeTest)
 
     g.Describe("Async test", func() {
+        g.It("Should fail when Fail is called immediately", func(done Done) {
+          g.Fail("Failed")
+        })
         g.It("Should fail when fail is called", func(done Done) {
             go func() {
                 time.Sleep(100 * time.Millisecond)

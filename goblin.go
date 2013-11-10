@@ -172,8 +172,9 @@ func runIt (g *G, h interface{}) {
         // the test is asynchronous
         g.shouldContinue = make(chan bool)
         doneCalled := 0
-        call(func(msg ...interface{}) {
+        go func() {call(func(msg ...interface{}) {
             if len(msg) > 0 {
+                fmt.Println("lalal")
                 g.Fail(msg)
             } else {
                 doneCalled++
@@ -182,7 +183,7 @@ func runIt (g *G, h interface{}) {
                 }
                 g.shouldContinue <- true
             }
-        })
+        })} ()
         <- g.shouldContinue
     } else {
         panic("Not implemented.")
