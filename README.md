@@ -51,16 +51,16 @@ import (
 )
 
 func Test(t *testing.T) {
-  g := Goblin(t)
-  g.Describe("Numbers", func() {
-      g.It("Should add two numbers ", func() {
-          g.Assert(1+1).Equal(2)
-      })
-      g.It("Should match equal numbers", func() {
-          g.Assert(2).Equal(4)
-      })
-      g.It("Should substract two numbers")
-  })
+    g := Goblin(t)
+    g.Describe("Numbers", func() {
+        g.It("Should add two numbers ", func() {
+            g.Assert(1+1).Equal(2)
+        })
+        g.It("Should match equal numbers", func() {
+            g.Assert(2).Equal(4)
+        })
+        g.It("Should substract two numbers")
+    })
 }
 ```
 
@@ -69,6 +69,26 @@ Ouput will be something like:
 ![](https://github.com/marcosnils/goblin/blob/master/goblin_output.png?raw=true)
 
 Nice and easy, right?
+
+Can I do asynchronous tests?
+----------------------------
+
+Yes! Goblin will help you to test asynchronous things, like goroutines, etc. You just need to add a ```done``` parameter to the handler function of your ```It```. This handler function should be called when your test passes.
+
+```go
+  ...
+  g.Describe("Numbers", func() {
+      g.It("Should add two numbers asynchronously", func(done Done) {
+          go func() {
+              g.Assert(1+1).Equal(2)
+              done()
+          }()
+      })
+  })
+  ...
+```
+
+Goblin will wait for the ```done``` call, a ```Fail``` call or any false assertion.
 
 How do I use it with Gomega?
 ----------------------------
@@ -92,9 +112,9 @@ func Test(t *testing.T) {
     RegisterFailHandler(func(m string, _ ...int) { g.Fail(m) })
 
     g.Describe("lala", func() {
-      g.It("lslslslsls", func() {
-        Expect(1).To(Equal(10))
-      })
+        g.It("lslslslsls", func() {
+            Expect(1).To(Equal(10))
+        })
     })
 }
 ```
