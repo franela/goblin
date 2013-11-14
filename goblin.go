@@ -171,7 +171,6 @@ func runIt (g *G, h interface{}) {
         doneCalled := 0
         go func() {call(func(msg ...interface{}) {
             if len(msg) > 0 {
-                fmt.Println("lalal")
                 g.Fail(msg)
             } else {
                 doneCalled++
@@ -180,8 +179,14 @@ func runIt (g *G, h interface{}) {
                 }
                 g.shouldContinue <- true
             }
-        })} ()
-        <- g.shouldContinue
+        }); } ()
+
+       select {
+         case <- g.shouldContinue:
+         case <- time.After(g.timeout):
+           g.shouldContinue = nil
+           g.Fail("Timeout exceeded "+fmt.Sprintf("%s", g.timeout))
+       }
     } else {
         panic("Not implemented.")
     }
