@@ -28,3 +28,21 @@ func TestEqual(t *testing.T) {
       t.FailNow()
     }
 }
+
+func TestBeTrue(t *testing.T) {
+    a := Assertion{src: true}
+    a.BeTrue()
+
+    if failed {
+      t.FailNow()
+    }
+}
+
+func TestBeFalse(t *testing.T) {
+    a := Assertion{src: false}
+    a.BeFalse()
+
+    if failed {
+      t.FailNow()
+    }
+}
