@@ -38,12 +38,12 @@ func (a *Assertion) Equal(dst interface{}) {
 
 func (a *Assertion) BeTrue() {
     if !objectsAreEqual(a.src, true) {
-        a.fail(fmt.Sprintf("%v", a.src)+"expected false to be truthy")
+        a.fail(fmt.Sprintf("%v", a.src)+" expected false to be truthy")
     }
 }
 
 func (a *Assertion) BeFalse() {
     if !objectsAreEqual(a.src, false) {
-        a.fail(fmt.Sprintf("%v", a.src)+"expected true to be falsey")
+        a.fail(fmt.Sprintf("%v", a.src)+" expected true to be falsey")
     }
 }
