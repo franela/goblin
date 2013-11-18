@@ -32,18 +32,18 @@ func TestEqual(t *testing.T) {
     }
 }
 
-func TestBeTrue(t *testing.T) {
+func TestIsTrue(t *testing.T) {
     a := Assertion{src: true}
-    a.BeTrue()
+    a.IsTrue()
 
     if failed {
       t.FailNow()
     }
 }
 
-func TestBeFalse(t *testing.T) {
+func TestIsFalse(t *testing.T) {
     a := Assertion{src: false}
-    a.BeFalse()
+    a.IsFalse()
 
     if failed {
       t.FailNow()
