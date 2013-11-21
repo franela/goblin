@@ -146,7 +146,7 @@ func (it *It) failed(msg string, stack []string) {
 
 func Goblin (t *testing.T) (*G) {
     g := &G{t: t}
-    g.reporter = Reporter(&DetailedReporter{})
+    g.reporter = Reporter(&DetailedReporter{fancy: &TerminalFancier{}})
     return g
 }
 
