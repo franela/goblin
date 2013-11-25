@@ -5,7 +5,6 @@ import (
     "time"
     "runtime"
     "fmt"
-    "code.google.com/p/go.crypto/ssh/terminal"
     "os"
 )
 
@@ -149,8 +148,8 @@ func (it *It) failed(msg string, stack []string) {
 func Goblin (t *testing.T) (*G) {
     g := &G{t: t}
     fd := os.Stdout.Fd()
-    var fancy TextFancier 
-    if terminal.IsTerminal(int(fd)) {
+    var fancy TextFancier
+    if IsTerminal(int(fd)) {
         fancy = &TerminalFancier{}
     } else {
         fancy = &Monochrome{}
