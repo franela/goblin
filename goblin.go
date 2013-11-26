@@ -5,6 +5,7 @@ import (
     "time"
     "runtime"
     "fmt"
+    "os"
 )
 
 type Done func(error ...interface{})
@@ -146,7 +147,15 @@ func (it *It) failed(msg string, stack []string) {
 
 func Goblin (t *testing.T) (*G) {
     g := &G{t: t}
-    g.reporter = Reporter(&DetailedReporter{})
+    fd := os.Stdout.Fd()
+    var fancy TextFancier
+    if IsTerminal(int(fd)) {
+        fancy = &TerminalFancier{}
+    } else {
+        fancy = &Monochrome{}
+    }
+
+    g.reporter = Reporter(&DetailedReporter{fancy: fancy})
     return g
 }
 
