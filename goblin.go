@@ -5,6 +5,7 @@ import (
     "time"
     "runtime"
     "fmt"
+    "flag"
 )
 
 type Done func(error ...interface{})
@@ -145,7 +146,10 @@ func (it *It) failed(msg string, stack []string) {
 }
 
 func Goblin (t *testing.T) (*G) {
-  g := &G{t: t, timeout: 5 * time.Second}
+    var timeout time.Duration
+    flag.DurationVar(&timeout, "goblin.timeout", 5000 * time.Millisecond, "Timeout for each test")
+    fmt.Println(timeout)
+    g := &G{t: t, timeout: timeout * time.Second}
     g.reporter = Reporter(&DetailedReporter{})
     return g
 }
@@ -157,7 +161,7 @@ func runIt (g *G, h interface{}) {
     chantime := make(chan bool)
     if call, ok := h.(func()); ok {
         // the test is synchronous
-       go func() { call(); chantime <- true  }() 
+       go func() { call(); chantime <- true  }()
 
        select {
          case <- chantime:
