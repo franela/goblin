@@ -32,6 +32,7 @@ What do I get with it?
 - Use a declarative and expressive language to write your tests
 - Plug different assertion libraries ([Gomega](https://github.com/onsi/gomega) supported so far)
 - Skip your tests the same way as you would do in Mocha
+- Automatic terminal support for colored outputs
 - Two line setup is all you need to get up running
 
 
