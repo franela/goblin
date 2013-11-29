@@ -5,15 +5,15 @@ import (
     "strings"
 )
 
-func ResolveStack() ([]string) {
-    return cleanStack(debug.Stack())
+func ResolveStack(skip int) ([]string) {
+    return cleanStack(debug.Stack(), skip)
 }
 
 
-func cleanStack(stack []byte) []string {
+func cleanStack(stack []byte, skip int) []string {
     arrayStack := strings.Split(string(stack), "\n")
     var finalStack []string
-    for i:=5; i<len(arrayStack); i++ {
+    for i:=skip; i<len(arrayStack); i++ {
         if strings.Contains(arrayStack[i], ".go") {
             finalStack = append(finalStack, arrayStack[i])
         }

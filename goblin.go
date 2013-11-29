@@ -163,27 +163,18 @@ func Goblin (t *testing.T) (*G) {
 func runIt (g *G, h interface{}) {
     defer timeTrack(time.Now(), g)
 
-    // We do this to recover from panic, which is how we know that the test failed.
-    /*
-    defer func() {
-        if r := recover(); r != nil {
-            stack := ResolveStack()
-            e := fmt.Sprintf("%v", r)
-            g.currentIt.failed(e, stack)
-        }
-    }()
-*/
+    g.shouldContinue = make(chan bool)
     if call, ok := h.(func()); ok {
         // the test is synchronous
-        call()
+        go func() {
+            call()
+            g.shouldContinue <- true
+        }()
     } else if call, ok := h.(func(Done)); ok {
         g.currentIt.isAsync = true
-        // the test is asynchronous
-        g.shouldContinue = make(chan bool)
         doneCalled := 0
         go func() {call(func(msg ...interface{}) {
             if len(msg) > 0 {
-                fmt.Println("lalal")
                 g.Fail(msg)
             } else {
                 doneCalled++
@@ -193,10 +184,10 @@ func runIt (g *G, h interface{}) {
                 g.shouldContinue <- true
             }
         })} ()
-        <- g.shouldContinue
     } else {
         panic("Not implemented.")
     }
+    <- g.shouldContinue
 }
 
 
@@ -254,13 +245,13 @@ func timeTrack(start time.Time, g *G) {
 }
 
 func (g *G) Fail(error interface{}) {
-    stack := ResolveStack()
+    //Skips 7 stacks due to the functions between the stack and the test
+    stack := ResolveStack(7)
     message := fmt.Sprintf("%v", error)
     g.currentIt.failed(message, stack)
     if g.shouldContinue != nil {
         g.shouldContinue <- true
     }
-    if g.currentIt.isAsync {
-       runtime.Goexit()
-    }
+    //Stop test function execution
+    runtime.Goexit()
 }
