@@ -187,6 +187,31 @@ func TestFailOnError(t *testing.T) {
     }
 }
 
+func TestFailImmediately(t *testing.T) {
+    fakeTest := testing.T{}
+    g := Goblin(&fakeTest)
+    reached := false
+    g.Describe("Errors", func() {
+        g.It("Should fail immediately for sync test ", func() {
+            g.Assert(false).IsTrue()
+            reached = true
+            g.Assert("foo").Equal("bar")
+        })
+        g.It("Should fail immediately for async test ", func(done Done) {
+            go func () {
+                g.Assert(false).IsTrue()
+                reached = true
+                g.Assert("foo").Equal("bar")
+                done()
+            }()
+        })
+    })
+
+    if reached {
+        t.Fatal()
+    }
+}
+
 func TestAsync(t *testing.T) {
     fakeTest := testing.T{}
 
