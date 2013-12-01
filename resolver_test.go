@@ -15,6 +15,6 @@ func TestResolver(t *testing.T) {
 }
 
 func dummyFunc(g *G) {
-    stack := ResolveStack()
-    g.Assert(len(stack)).Equal(1)
+    stack := ResolveStack(1)
+    g.Assert(len(stack)).Equal(3)
 }

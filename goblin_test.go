@@ -3,7 +3,6 @@ package goblin
 import (
     "testing"
     "time"
-    "flag"
 )
 
 func TestAddNumbersSucceed(t *testing.T) {
@@ -188,6 +187,31 @@ func TestFailOnError(t *testing.T) {
     }
 }
 
+func TestFailImmediately(t *testing.T) {
+    fakeTest := testing.T{}
+    g := Goblin(&fakeTest)
+    reached := false
+    g.Describe("Errors", func() {
+        g.It("Should fail immediately for sync test ", func() {
+            g.Assert(false).IsTrue()
+            reached = true
+            g.Assert("foo").Equal("bar")
+        })
+        g.It("Should fail immediately for async test ", func(done Done) {
+            go func () {
+                g.Assert(false).IsTrue()
+                reached = true
+                g.Assert("foo").Equal("bar")
+                done()
+            }()
+        })
+    })
+
+    if reached {
+        t.Fatal()
+    }
+}
+
 func TestAsync(t *testing.T) {
     fakeTest := testing.T{}
     g := Goblin(&fakeTest)
@@ -235,40 +259,6 @@ func TestTimeout(t *testing.T) {
   fakeTest := testing.T{}
   g := Goblin(&fakeTest)
   g.setTimeout(50 * time.Millisecond)
-
-  g.Describe("Timeout", func(){
-    g.It("Should fail if test exceeds the specified timeout", func() {
-      time.Sleep(100 * time.Millisecond)
-    })
-  })
-
-  if !fakeTest.Failed() {
-    t.Fatal()
-  }
-}
-
-
-func TestTimeoutAsync(t *testing.T) {
-  fakeTest := testing.T{}
-  g := Goblin(&fakeTest)
-  g.setTimeout(50 * time.Millisecond)
-
-  g.Describe("Timeout", func(){
-    g.It("Should fail if test exceeds the specified timeout", func(done Done) {
-      time.Sleep(100 * time.Millisecond)
-      done()
-    })
-  })
-
-  if !fakeTest.Failed() {
-    t.Fatal()
-  }
-}
-
-func TestTimeoutUsingFlag(t *testing.T) {
-  fakeTest := testing.T{}
-  flag.Set("goblin.timeout","50ms")
-  g := Goblin(&fakeTest)
 
   g.Describe("Timeout", func(){
     g.It("Should fail if test exceeds the specified timeout", func() {

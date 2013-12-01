@@ -5,7 +5,7 @@ import (
     "time"
     "runtime"
     "fmt"
-    "flag"
+    "os"
 )
 
 type Done func(error ...interface{})
@@ -146,11 +146,16 @@ func (it *It) failed(msg string, stack []string) {
 }
 
 func Goblin (t *testing.T) (*G) {
-    var timeout time.Duration
-    flag.DurationVar(&timeout, "goblin.timeout", 5000 * time.Millisecond, "Timeout for each test")
-    fmt.Println(timeout)
-    g := &G{t: t, timeout: timeout * time.Second}
-    g.reporter = Reporter(&DetailedReporter{})
+    g := &G{t: t, timeout: 5 * time.Second}
+    fd := os.Stdout.Fd()
+    var fancy TextFancier
+    if IsTerminal(int(fd)) {
+        fancy = &TerminalFancier{}
+    } else {
+        fancy = &Monochrome{}
+    }
+
+    g.reporter = Reporter(&DetailedReporter{fancy: fancy})
     return g
 }
 
@@ -158,20 +163,11 @@ func Goblin (t *testing.T) (*G) {
 func runIt (g *G, h interface{}) {
     defer timeTrack(time.Now(), g)
 
-    chantime := make(chan bool)
+    g.shouldContinue = make(chan bool)
     if call, ok := h.(func()); ok {
         // the test is synchronous
-       go func() { call(); chantime <- true  }()
-
-       select {
-         case <- chantime:
-         case <- time.After(g.timeout):
-           g.Fail("Timeout exceeded "+fmt.Sprintf("%s", g.timeout))
-       }
+        go func() { call(); g.shouldContinue <- true  }()
     } else if call, ok := h.(func(Done)); ok {
-        g.currentIt.isAsync = true
-        // the test is asynchronous
-        g.shouldContinue = make(chan bool)
         doneCalled := 0
         go func() {call(func(msg ...interface{}) {
             if len(msg) > 0 {
@@ -183,16 +179,16 @@ func runIt (g *G, h interface{}) {
                 }
                 g.shouldContinue <- true
             }
-        }); } ()
-
-       select {
-         case <- g.shouldContinue:
-         case <- time.After(g.timeout):
-           g.shouldContinue = nil
-           g.Fail("Timeout exceeded "+fmt.Sprintf("%s", g.timeout))
-       }
+        })} ()
     } else {
         panic("Not implemented.")
+    }
+    select {
+        case <- g.shouldContinue:
+        case <- time.After(g.timeout):
+            //Set to nil as it shouldn't continue
+            g.shouldContinue = nil
+            g.Fail("Test exceeded "+fmt.Sprintf("%s", g.timeout))
     }
 }
 
@@ -256,13 +252,13 @@ func timeTrack(start time.Time, g *G) {
 }
 
 func (g *G) Fail(error interface{}) {
-    stack := ResolveStack()
+    //Skips 7 stacks due to the functions between the stack and the test
+    stack := ResolveStack(7)
     message := fmt.Sprintf("%v", error)
     g.currentIt.failed(message, stack)
     if g.shouldContinue != nil {
         g.shouldContinue <- true
     }
-    if g.currentIt.isAsync {
-       runtime.Goexit()
-    }
+    //Stop test function execution
+    runtime.Goexit()
 }
