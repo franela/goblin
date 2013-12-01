@@ -219,10 +219,6 @@ type G struct {
     shouldContinue chan bool
 }
 
-func (g *G) setTimeout(timeout time.Duration) {
-  g.timeout = timeout
-}
-
 func (g *G) SetReporter(r Reporter) {
     g.reporter = r
 }
