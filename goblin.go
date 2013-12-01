@@ -146,7 +146,7 @@ func (it *It) failed(msg string, stack []string) {
 }
 
 func Goblin (t *testing.T) (*G) {
-    g := &G{t: t}
+    g := &G{t: t, timeout: 5 * time.Second}
     fd := os.Stdout.Fd()
     var fancy TextFancier
     if IsTerminal(int(fd)) {
@@ -166,12 +166,8 @@ func runIt (g *G, h interface{}) {
     g.shouldContinue = make(chan bool)
     if call, ok := h.(func()); ok {
         // the test is synchronous
-        go func() {
-            call()
-            g.shouldContinue <- true
-        }()
+        go func() { call(); g.shouldContinue <- true  }()
     } else if call, ok := h.(func(Done)); ok {
-        g.currentIt.isAsync = true
         doneCalled := 0
         go func() {call(func(msg ...interface{}) {
             if len(msg) > 0 {
@@ -187,7 +183,13 @@ func runIt (g *G, h interface{}) {
     } else {
         panic("Not implemented.")
     }
-    <- g.shouldContinue
+    select {
+        case <- g.shouldContinue:
+        case <- time.After(g.timeout):
+            //Set to nil as it shouldn't continue
+            g.shouldContinue = nil
+            g.Fail("Test exceeded "+fmt.Sprintf("%s", g.timeout))
+    }
 }
 
 
@@ -195,8 +197,13 @@ type G struct {
     t *testing.T
     parent *Describe
     currentIt *It
+    timeout time.Duration
     reporter Reporter
     shouldContinue chan bool
+}
+
+func (g *G) setTimeout(timeout time.Duration) {
+  g.timeout = timeout
 }
 
 func (g *G) SetReporter(r Reporter) {
