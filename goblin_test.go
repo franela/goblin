@@ -5,6 +5,8 @@ import (
     "time"
 )
 
+
+
 func TestAddNumbersSucceed(t *testing.T) {
     fakeTest := testing.T{}
     g := Goblin(&fakeTest)
@@ -257,12 +259,16 @@ func TestAsync(t *testing.T) {
 
 func TestTimeout(t *testing.T) {
   fakeTest := testing.T{}
-  g := Goblin(&fakeTest)
-  g.setTimeout(50 * time.Millisecond)
+  g := Goblin(&fakeTest, "-goblin.timeout=50ms")
 
-  g.Describe("Timeout", func(){
-    g.It("Should fail if test exceeds the specified timeout", func() {
+  g.Describe("Test", func(){
+    g.It("Should fail if test exceeds the specified timeout with sync test", func() {
       time.Sleep(100 * time.Millisecond)
+    })
+
+    g.It("Should fail if test exceeds the specified timeout with async test", func(done Done) {
+      time.Sleep(100 * time.Millisecond)
+      done()
     })
   })
 

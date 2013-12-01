@@ -6,7 +6,9 @@ import (
     "runtime"
     "fmt"
     "os"
+    "flag"
 )
+
 
 type Done func(error ...interface{})
 
@@ -145,8 +147,23 @@ func (it *It) failed(msg string, stack []string) {
     it.failure = &Failure{stack:stack, message:msg, testName: it.parent.name + " " + it.name}
 }
 
-func Goblin (t *testing.T) (*G) {
-    g := &G{t: t, timeout: 5 * time.Second}
+var timeout *time.Duration
+
+func init() {
+    //Flag parsing
+    timeout = flag.Duration("goblin.timeout", 5 * time.Second, "Sets default timeouts for all tests")
+    flag.Parse()
+}
+
+func Goblin (t *testing.T, arguments ...string) (*G) {
+    var gobtimeout = timeout
+    if arguments != nil {
+        //Programatic flags
+        var args = flag.NewFlagSet("Goblin arguments", flag.ContinueOnError);
+        gobtimeout = args.Duration("goblin.timeout", 5 * time.Second, "Sets timeouts for tests")
+        args.Parse(arguments)
+    }
+    g := &G{t: t, timeout: *gobtimeout}
     fd := os.Stdout.Fd()
     var fancy TextFancier
     if IsTerminal(int(fd)) {
@@ -253,7 +270,7 @@ func timeTrack(start time.Time, g *G) {
 
 func (g *G) Fail(error interface{}) {
     //Skips 7 stacks due to the functions between the stack and the test
-    stack := ResolveStack(7)
+    stack := ResolveStack(4)
     message := fmt.Sprintf("%v", error)
     g.currentIt.failed(message, stack)
     if g.shouldContinue != nil {
