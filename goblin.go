@@ -179,7 +179,7 @@ func Goblin (t *testing.T, arguments ...string) (*G) {
 
 func runIt (g *G, h interface{}) {
     defer timeTrack(time.Now(), g)
-
+    g.timedOut = false
     g.shouldContinue = make(chan bool)
     if call, ok := h.(func()); ok {
         // the test is synchronous
@@ -203,8 +203,10 @@ func runIt (g *G, h interface{}) {
     select {
         case <- g.shouldContinue:
         case <- time.After(g.timeout):
+            fmt.Println("Timedout")
             //Set to nil as it shouldn't continue
             g.shouldContinue = nil
+            g.timedOut = true
             g.Fail("Test exceeded "+fmt.Sprintf("%s", g.timeout))
     }
 }
@@ -216,6 +218,7 @@ type G struct {
     currentIt *It
     timeout time.Duration
     reporter Reporter
+    timedOut bool
     shouldContinue chan bool
 }
 
@@ -272,6 +275,9 @@ func (g *G) Fail(error interface{}) {
     if g.shouldContinue != nil {
         g.shouldContinue <- true
     }
-    //Stop test function execution
-    runtime.Goexit()
+
+    if !g.timedOut {
+        //Stop test function execution
+        runtime.Goexit()
+    }
 }
