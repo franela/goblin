@@ -6,7 +6,9 @@ import (
     "runtime"
     "fmt"
     "os"
+    "flag"
 )
+
 
 type Done func(error ...interface{})
 
@@ -145,8 +147,23 @@ func (it *It) failed(msg string, stack []string) {
     it.failure = &Failure{stack:stack, message:msg, testName: it.parent.name + " " + it.name}
 }
 
-func Goblin (t *testing.T) (*G) {
-    g := &G{t: t}
+var timeout *time.Duration
+
+func init() {
+    //Flag parsing
+    timeout = flag.Duration("goblin.timeout", 5 * time.Second, "Sets default timeouts for all tests")
+    flag.Parse()
+}
+
+func Goblin (t *testing.T, arguments ...string) (*G) {
+    var gobtimeout = timeout
+    if arguments != nil {
+        //Programatic flags
+        var args = flag.NewFlagSet("Goblin arguments", flag.ContinueOnError);
+        gobtimeout = args.Duration("goblin.timeout", 5 * time.Second, "Sets timeouts for tests")
+        args.Parse(arguments)
+    }
+    g := &G{t: t, timeout: *gobtimeout}
     fd := os.Stdout.Fd()
     var fancy TextFancier
     if IsTerminal(int(fd)) {
@@ -162,16 +179,12 @@ func Goblin (t *testing.T) (*G) {
 
 func runIt (g *G, h interface{}) {
     defer timeTrack(time.Now(), g)
-
+    g.timedOut = false
     g.shouldContinue = make(chan bool)
     if call, ok := h.(func()); ok {
         // the test is synchronous
-        go func() {
-            call()
-            g.shouldContinue <- true
-        }()
+        go func() { call(); g.shouldContinue <- true  }()
     } else if call, ok := h.(func(Done)); ok {
-        g.currentIt.isAsync = true
         doneCalled := 0
         go func() {call(func(msg ...interface{}) {
             if len(msg) > 0 {
@@ -187,7 +200,15 @@ func runIt (g *G, h interface{}) {
     } else {
         panic("Not implemented.")
     }
-    <- g.shouldContinue
+    select {
+        case <- g.shouldContinue:
+        case <- time.After(g.timeout):
+            fmt.Println("Timedout")
+            //Set to nil as it shouldn't continue
+            g.shouldContinue = nil
+            g.timedOut = true
+            g.Fail("Test exceeded "+fmt.Sprintf("%s", g.timeout))
+    }
 }
 
 
@@ -195,7 +216,9 @@ type G struct {
     t *testing.T
     parent *Describe
     currentIt *It
+    timeout time.Duration
     reporter Reporter
+    timedOut bool
     shouldContinue chan bool
 }
 
@@ -246,12 +269,15 @@ func timeTrack(start time.Time, g *G) {
 
 func (g *G) Fail(error interface{}) {
     //Skips 7 stacks due to the functions between the stack and the test
-    stack := ResolveStack(7)
+    stack := ResolveStack(4)
     message := fmt.Sprintf("%v", error)
     g.currentIt.failed(message, stack)
     if g.shouldContinue != nil {
         g.shouldContinue <- true
     }
-    //Stop test function execution
-    runtime.Goexit()
+
+    if !g.timedOut {
+        //Stop test function execution
+        runtime.Goexit()
+    }
 }
