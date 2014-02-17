@@ -11,9 +11,9 @@ type Assertion struct {
 }
 
 func objectsAreEqual(a, b interface{}) bool {
-  if reflect.TypeOf(a) != reflect.TypeOf(b) {
-    return false
-  }
+	if reflect.TypeOf(a) != reflect.TypeOf(b) {
+		return false
+	}
 
 	if reflect.DeepEqual(a, b) {
 		return true
