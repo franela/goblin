@@ -3,7 +3,6 @@ package goblin
 import (
 	"flag"
 	"fmt"
-	"os"
 	"runtime"
 	"testing"
 	"time"
@@ -146,10 +145,12 @@ func (it *It) failed(msg string, stack []string) {
 }
 
 var timeout *time.Duration
+var isTty *bool
 
 func init() {
 	//Flag parsing
 	timeout = flag.Duration("goblin.timeout", 5*time.Second, "Sets default timeouts for all tests")
+	isTty = flag.Bool("goblin.tty", true, "Sets the default output format (color / monochrome)")
 	flag.Parse()
 }
 
@@ -162,9 +163,8 @@ func Goblin(t *testing.T, arguments ...string) *G {
 		args.Parse(arguments)
 	}
 	g := &G{t: t, timeout: *gobtimeout}
-	fd := os.Stdout.Fd()
 	var fancy TextFancier
-	if IsTerminal(int(fd)) {
+	if *isTty {
 		fancy = &TerminalFancier{}
 	} else {
 		fancy = &Monochrome{}
