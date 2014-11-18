@@ -267,3 +267,29 @@ func TestTimeout(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func TestErrorMessages(t *testing.T) {
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest)
+
+	g.Describe("Error messages test", func() {
+		g.It("Should fail IsTrue with error message", func() {
+			g.Assert(false).IsTrue("A message")
+		})
+
+		g.It("Should fail IsFalse with error message", func() {
+			g.Assert(true).IsFalse("A message")
+		})
+		g.It("Should fail Equal with error message", func() {
+			g.Assert(false).Equal(true, "A message")
+		})
+		g.It("Should fail Eql with error message", func() {
+			g.Assert(false).Eql(true, "A message")
+		})
+	})
+
+	if !fakeTest.Failed() {
+		t.Fatal()
+	}
+
+}

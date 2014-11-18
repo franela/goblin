@@ -1,8 +1,6 @@
 package goblin
 
-import (
-	"testing"
-)
+import "testing"
 
 // So we can test asserting type against its type alias
 type String string
@@ -11,16 +9,26 @@ type String string
 type AssertionVerifier struct {
 	ShouldPass bool
 	didFail    bool
+	msg        interface{}
 }
 
 func (a *AssertionVerifier) FailFunc(msg interface{}) {
 	a.didFail = true
+	a.msg = msg
 }
 
 func (a *AssertionVerifier) Verify(t *testing.T) {
 	if a.didFail == a.ShouldPass {
 		t.FailNow()
 	}
+}
+
+func (a *AssertionVerifier) VerifyMessage(t *testing.T, message string) {
+	a.Verify(t)
+	if a.msg.(string) != message {
+		t.Fatalf(`"%s" != "%s"`, a.msg, message)
+	}
+
 }
 
 func TestEqual(t *testing.T) {
@@ -74,4 +82,32 @@ func TestIsFalse(t *testing.T) {
 	a = Assertion{src: true, fail: verifier.FailFunc}
 	a.IsFalse()
 	verifier.Verify(t)
+}
+
+func TestEqualWithMessage(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: String("baz"), fail: verifier.FailFunc}
+	a.Equal("bar", "FAIL")
+	verifier.Verify(t)
+	verifier.VerifyMessage(t, "baz does not equal bar, FAIL")
+	a.Eql("bar", "FAIL AGAIN")
+	verifier.Verify(t)
+	verifier.VerifyMessage(t, "baz does not equal bar, FAIL AGAIN")
+
+}
+
+func TestIsFalseWithMessage(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: true, fail: verifier.FailFunc}
+	a.IsFalse("false is not true")
+	verifier.Verify(t)
+	verifier.VerifyMessage(t, "true expected true to be falsey, false is not true")
+}
+
+func TestIsTrueWithMessage(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: false, fail: verifier.FailFunc}
+	a.IsTrue("true is not false")
+	verifier.Verify(t)
+	verifier.VerifyMessage(t, "false expected false to be truthy, true is not false")
 }
