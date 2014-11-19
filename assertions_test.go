@@ -84,18 +84,6 @@ func TestIsFalse(t *testing.T) {
 	verifier.Verify(t)
 }
 
-func TestEqualWithMessage(t *testing.T) {
-	verifier := AssertionVerifier{ShouldPass: false}
-	a := Assertion{src: String("baz"), fail: verifier.FailFunc}
-	a.Equal("bar", "FAIL")
-	verifier.Verify(t)
-	verifier.VerifyMessage(t, "baz does not equal bar, FAIL")
-	a.Eql("bar", "FAIL AGAIN")
-	verifier.Verify(t)
-	verifier.VerifyMessage(t, "baz does not equal bar, FAIL AGAIN")
-
-}
-
 func TestIsFalseWithMessage(t *testing.T) {
 	verifier := AssertionVerifier{ShouldPass: false}
 	a := Assertion{src: true, fail: verifier.FailFunc}

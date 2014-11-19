@@ -38,13 +38,13 @@ func formatMessages(messages ...string) string {
 	return ""
 }
 
-func (a *Assertion) Eql(dst interface{}, messages ...string) {
-	a.Equal(dst, messages...)
+func (a *Assertion) Eql(dst interface{}) {
+	a.Equal(dst)
 }
 
-func (a *Assertion) Equal(dst interface{}, messages ...string) {
+func (a *Assertion) Equal(dst interface{}) {
 	if !objectsAreEqual(a.src, dst) {
-		a.fail(fmt.Sprintf("%v %s %v%s", a.src, "does not equal", dst, formatMessages(messages...)))
+		a.fail(fmt.Sprintf("%v %s %v", a.src, "does not equal", dst))
 	}
 }
 

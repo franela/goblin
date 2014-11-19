@@ -280,12 +280,6 @@ func TestErrorMessages(t *testing.T) {
 		g.It("Should fail IsFalse with error message", func() {
 			g.Assert(true).IsFalse("A message")
 		})
-		g.It("Should fail Equal with error message", func() {
-			g.Assert(false).Equal(true, "A message")
-		})
-		g.It("Should fail Eql with error message", func() {
-			g.Assert(false).Eql(true, "A message")
-		})
 	})
 
 	if !fakeTest.Failed() {
