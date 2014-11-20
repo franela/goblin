@@ -267,3 +267,33 @@ func TestTimeout(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func TestAssertBooleanFalse(t *testing.T) {
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest, "-goblin.timeout=10ms")
+
+	g.Describe("Test", func() {
+		g.It("Should fail if assert is called with a false argument ", func() {
+			g.Assert(false)
+		})
+	})
+
+	if !fakeTest.Failed() {
+		t.Fatal()
+	}
+}
+
+func TestAssertBooleanTrue(t *testing.T) {
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest, "-goblin.timeout=10ms")
+
+	g.Describe("Test", func() {
+		g.It("Should fail if assert is called with a false argument ", func() {
+			g.Assert(true)
+		})
+	})
+
+	if fakeTest.Failed() {
+		t.Fatal()
+	}
+}
