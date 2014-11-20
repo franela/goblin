@@ -167,7 +167,7 @@ func Goblin(t *testing.T, arguments ...string) *G {
 	}
 	g := &G{t: t, timeout: *gobtimeout}
 
-	if v2assertion != nil {
+	if *v2assertion {
 		g.assertion = &AssertionV2{fail: g.Fail}
 	} else {
 		g.assertion = &AssertionV1{fail: g.Fail}
