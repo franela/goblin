@@ -267,3 +267,19 @@ func TestTimeout(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func TestV2Assertion(t *testing.T) {
+	var isV2 bool
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest, "-goblin.assert.v2")
+
+	g.Describe("Goblin", func() {
+		g.It("Should assertion library should be v2", func() {
+			_, isV2 = g.assertion.(*AssertionV2)
+		})
+	})
+
+	if !isV2 {
+		t.Fatal()
+	}
+}

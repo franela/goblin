@@ -26,26 +26,26 @@ func (a *AssertionVerifier) Verify(t *testing.T) {
 func TestEqual(t *testing.T) {
 
 	verifier := AssertionVerifier{ShouldPass: true}
-	a := Assertion{src: 1, fail: verifier.FailFunc}
+	a := AssertionV1{src: 1, fail: verifier.FailFunc}
 	a.Equal(1)
 	verifier.Verify(t)
 	a.Eql(1)
 	verifier.Verify(t)
 
-	a = Assertion{src: "foo"}
+	a = AssertionV1{src: "foo"}
 	a.Equal("foo")
 	verifier.Verify(t)
 	a.Eql("foo")
 	verifier.Verify(t)
 
-	a = Assertion{src: map[string]string{"foo": "bar"}}
+	a = AssertionV1{src: map[string]string{"foo": "bar"}}
 	a.Equal(map[string]string{"foo": "bar"})
 	verifier.Verify(t)
 	a.Eql(map[string]string{"foo": "bar"})
 	verifier.Verify(t)
 
 	verifier = AssertionVerifier{ShouldPass: false}
-	a = Assertion{src: String("baz"), fail: verifier.FailFunc}
+	a = AssertionV1{src: String("baz"), fail: verifier.FailFunc}
 	a.Equal("baz")
 	verifier.Verify(t)
 	a.Eql("baz")
@@ -54,24 +54,24 @@ func TestEqual(t *testing.T) {
 
 func TestIsTrue(t *testing.T) {
 	verifier := AssertionVerifier{ShouldPass: true}
-	a := Assertion{src: true, fail: verifier.FailFunc}
+	a := AssertionV1{src: true, fail: verifier.FailFunc}
 	a.IsTrue()
 	verifier.Verify(t)
 
 	verifier = AssertionVerifier{ShouldPass: false}
-	a = Assertion{src: false, fail: verifier.FailFunc}
+	a = AssertionV1{src: false, fail: verifier.FailFunc}
 	a.IsTrue()
 	verifier.Verify(t)
 }
 
 func TestIsFalse(t *testing.T) {
 	verifier := AssertionVerifier{ShouldPass: true}
-	a := Assertion{src: false, fail: verifier.FailFunc}
+	a := AssertionV1{src: false, fail: verifier.FailFunc}
 	a.IsFalse()
 	verifier.Verify(t)
 
 	verifier = AssertionVerifier{ShouldPass: false}
-	a = Assertion{src: true, fail: verifier.FailFunc}
+	a = AssertionV1{src: true, fail: verifier.FailFunc}
 	a.IsFalse()
 	verifier.Verify(t)
 }

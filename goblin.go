@@ -146,11 +146,13 @@ func (it *It) failed(msg string, stack []string) {
 
 var timeout *time.Duration
 var isTty *bool
+var v2assertion *bool
 
 func init() {
 	//Flag parsing
 	timeout = flag.Duration("goblin.timeout", 5*time.Second, "Sets default timeouts for all tests")
 	isTty = flag.Bool("goblin.tty", true, "Sets the default output format (color / monochrome)")
+	v2assertion = flag.Bool("goblin.assert.v2", false, "Specifies to use assertions v2")
 	flag.Parse()
 }
 
@@ -160,9 +162,17 @@ func Goblin(t *testing.T, arguments ...string) *G {
 		//Programatic flags
 		var args = flag.NewFlagSet("Goblin arguments", flag.ContinueOnError)
 		gobtimeout = args.Duration("goblin.timeout", 5*time.Second, "Sets timeouts for tests")
+		v2assertion = args.Bool("goblin.assert.v2", false, "Specifies to use assertions v2")
 		args.Parse(arguments)
 	}
 	g := &G{t: t, timeout: *gobtimeout}
+
+	if v2assertion != nil {
+		g.assertion = &AssertionV2{fail: g.Fail}
+	} else {
+		g.assertion = &AssertionV1{fail: g.Fail}
+	}
+
 	var fancy TextFancier
 	if *isTty {
 		fancy = &TerminalFancier{}
@@ -218,6 +228,7 @@ type G struct {
 	reporter       Reporter
 	timedOut       bool
 	shouldContinue chan bool
+	assertion      Assertion
 }
 
 func (g *G) SetReporter(r Reporter) {
@@ -256,8 +267,9 @@ func (g *G) AfterEach(h func()) {
 	g.parent.afterEach = append(g.parent.afterEach, h)
 }
 
-func (g *G) Assert(src interface{}) *Assertion {
-	return &Assertion{src: src, fail: g.Fail}
+func (g *G) Assert(src interface{}) Assertion {
+	g.assertion.SetSource(src)
+	return g.assertion
 }
 
 func timeTrack(start time.Time, g *G) {
@@ -265,7 +277,7 @@ func timeTrack(start time.Time, g *G) {
 }
 
 func (g *G) Fail(error interface{}) {
-	//Skips 7 stacks due to the functions between the stack and the test
+	//Skips 4 stacks due to the functions between the stack and the test
 	stack := ResolveStack(4)
 	message := fmt.Sprintf("%v", error)
 	g.currentIt.failed(message, stack)
