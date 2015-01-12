@@ -20,10 +20,6 @@ func objectsAreEqual(a, b interface{}) bool {
 		return true
 	}
 
-	if reflect.ValueOf(a) == reflect.ValueOf(b) {
-		return true
-	}
-
 	if fmt.Sprintf("%#v", a) == fmt.Sprintf("%#v", b) {
 		return true
 	}
