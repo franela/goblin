@@ -104,13 +104,14 @@ type Failure struct {
 }
 
 type It struct {
-	h          interface{}
-	name       string
-	parent     *Describe
-	failure    *Failure
-	reporter   Reporter
-	isAsync    bool
-	expectFail bool
+	h           interface{}
+	name        string
+	parent      *Describe
+	failure     *Failure
+	reporter    Reporter
+	isAsync     bool
+	expectFail  bool
+	expectPanic bool
 }
 
 func (it *It) run(g *G) bool {
@@ -131,18 +132,18 @@ func (it *It) run(g *G) bool {
 	if it.failure != nil {
 		failed = true
 	}
-	
+
 	if it.expectFail {
 		failed = !failed
 	}
-	
+
 	if failed {
 		g.reporter.itFailed(it.name)
 		g.reporter.failure(it.failure)
 	} else {
 		g.reporter.itPassed(it.name)
 	}
-	
+
 	g.currentIt = nil //Set currentIt back to nil - used to test if we are currently in an 'it' block
 	return failed
 }
@@ -187,10 +188,11 @@ func runIt(g *G, h interface{}) {
 	g.shouldContinue = make(chan bool)
 	if call, ok := h.(func()); ok {
 		// the test is synchronous
-		go func() { call(); g.shouldContinue <- true }()
+		go func() { defer g.catch(); call(); g.shouldContinue <- true }()
 	} else if call, ok := h.(func(Done)); ok {
 		doneCalled := 0
 		go func() {
+			defer g.catch()
 			call(func(msg ...interface{}) {
 				if len(msg) > 0 {
 					g.Fail(msg)
@@ -264,15 +266,43 @@ func (g *G) AfterEach(h func()) {
 }
 
 func (g *G) Assert(src interface{}) *Assertion {
-	return &Assertion{src: src, fail: g.Fail}
+	a := &Assertion{src: src, fail: g.Fail}
+	n := &NotAssertion{src: src, fail: g.Fail}
+	a.Not = n
+	n.Not = a
+	return a
 }
 
 func (g *G) ExpectFail() {
-	if g.currentIt != nil {
+	if g.currentIt == nil {
 		panic("ExpectFail called outside It block!")
 	}
-	
+
 	g.currentIt.expectFail = true
+}
+
+func (g *G) ExpectPanic() {
+	if g.currentIt == nil {
+		panic("ExpectPanic called outside It block!")
+	}
+
+	g.currentIt.expectPanic = true
+}
+
+func (g *G) catch() {
+	if g.currentIt == nil {
+		panic("Catch called outside It block!")
+	}
+
+	if r := recover(); r != nil && !g.currentIt.expectPanic {
+		g.Fail(fmt.Sprintf("Caught unexpected panic %v", r))
+		return
+	} else if r == nil && g.currentIt.expectPanic {
+		g.Fail("Expected panic, got nothing")
+		return
+	}
+
+	g.shouldContinue <- true
 }
 
 func timeTrack(start time.Time, g *G) {
