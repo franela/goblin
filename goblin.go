@@ -104,12 +104,13 @@ type Failure struct {
 }
 
 type It struct {
-	h        interface{}
-	name     string
-	parent   *Describe
-	failure  *Failure
-	reporter Reporter
-	isAsync  bool
+	h          interface{}
+	name       string
+	parent     *Describe
+	failure    *Failure
+	reporter   Reporter
+	isAsync    bool
+	expectFail bool
 }
 
 func (it *It) run(g *G) bool {
@@ -130,13 +131,19 @@ func (it *It) run(g *G) bool {
 	if it.failure != nil {
 		failed = true
 	}
-
+	
+	if it.expectFail {
+		failed = !failed
+	}
+	
 	if failed {
 		g.reporter.itFailed(it.name)
 		g.reporter.failure(it.failure)
 	} else {
 		g.reporter.itPassed(it.name)
 	}
+	
+	g.currentIt = nil //Set currentIt back to nil - used to test if we are currently in an 'it' block
 	return failed
 }
 
@@ -258,6 +265,14 @@ func (g *G) AfterEach(h func()) {
 
 func (g *G) Assert(src interface{}) *Assertion {
 	return &Assertion{src: src, fail: g.Fail}
+}
+
+func (g *G) ExpectFail() {
+	if g.currentIt != nil {
+		panic("ExpectFail called outside It block!")
+	}
+	
+	g.currentIt.expectFail = true
 }
 
 func timeTrack(start time.Time, g *G) {
