@@ -89,7 +89,7 @@ func TestIsFalseWithMessage(t *testing.T) {
 	a := Assertion{src: true, fail: verifier.FailFunc}
 	a.IsFalse("false is not true")
 	verifier.Verify(t)
-	verifier.VerifyMessage(t, "true expected true to be falsey, false is not true")
+	verifier.VerifyMessage(t, "Expected true to be falsey, false is not true")
 }
 
 func TestIsTrueWithMessage(t *testing.T) {
@@ -97,5 +97,5 @@ func TestIsTrueWithMessage(t *testing.T) {
 	a := Assertion{src: false, fail: verifier.FailFunc}
 	a.IsTrue("true is not false")
 	verifier.Verify(t)
-	verifier.VerifyMessage(t, "false expected false to be truthy, true is not false")
+	verifier.VerifyMessage(t, "Expected false to be truthy, true is not false")
 }
