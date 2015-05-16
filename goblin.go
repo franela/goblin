@@ -112,9 +112,12 @@ type It struct {
 	isAsync     bool
 	expectFail  bool
 	expectPanic bool
+	paniced     bool
+	panicmsg    interface{}
 }
 
 func (it *It) run(g *G) bool {
+	defer recov()
 	g.currentIt = it
 
 	if it.h == nil {
@@ -128,6 +131,12 @@ func (it *It) run(g *G) bool {
 
 	it.parent.runAfterEach()
 
+	if it.paniced && !it.expectPanic {
+		it.failed(fmt.Sprintf("Caught unexpected panic %v", it.panicmsg), ResolveStack(0))
+	} else if !it.paniced && it.expectPanic {
+		it.failed("Expected panic, got nothing", ResolveStack(0))
+	}
+
 	failed := false
 	if it.failure != nil {
 		failed = true
@@ -135,6 +144,9 @@ func (it *It) run(g *G) bool {
 
 	if it.expectFail {
 		failed = !failed
+		if failed {
+			it.failed("Expected test to fail, but it passed", ResolveStack(0))
+		}
 	}
 
 	if failed {
@@ -163,6 +175,7 @@ func init() {
 }
 
 func Goblin(t *testing.T, arguments ...string) *G {
+	defer recov()
 	var gobtimeout = timeout
 	if arguments != nil {
 		//Programatic flags
@@ -184,6 +197,7 @@ func Goblin(t *testing.T, arguments ...string) *G {
 
 func runIt(g *G, h interface{}) {
 	defer timeTrack(time.Now(), g)
+	defer recov()
 	g.timedOut = false
 	g.shouldContinue = make(chan bool)
 	if call, ok := h.(func()); ok {
@@ -191,6 +205,7 @@ func runIt(g *G, h interface{}) {
 		go func() { defer g.catch(); call(); g.shouldContinue <- true }()
 	} else if call, ok := h.(func(Done)); ok {
 		doneCalled := 0
+
 		go func() {
 			defer g.catch()
 			call(func(msg ...interface{}) {
@@ -290,19 +305,14 @@ func (g *G) ExpectPanic() {
 }
 
 func (g *G) catch() {
-	if g.currentIt == nil {
-		panic("Catch called outside It block!")
-	}
+	r := recover()
 
-	if r := recover(); r != nil && !g.currentIt.expectPanic {
-		g.Fail(fmt.Sprintf("Caught unexpected panic %v", r))
-		return
-	} else if r == nil && g.currentIt.expectPanic {
-		g.Fail("Expected panic, got nothing")
-		return
-	}
+	g.currentIt.paniced = (r != nil)
+	g.currentIt.panicmsg = r
 
-	g.shouldContinue <- true
+	if g.currentIt.paniced {
+		g.shouldContinue <- true
+	}
 }
 
 func timeTrack(start time.Time, g *G) {
@@ -321,5 +331,12 @@ func (g *G) Fail(error interface{}) {
 	if !g.timedOut {
 		//Stop test function execution
 		runtime.Goexit()
+	}
+}
+
+func recov() {
+	if r := recover(); r != nil {
+		fmt.Println("Caught panic:")
+		fmt.Println(r)
 	}
 }
