@@ -249,21 +249,18 @@ func TestAsync(t *testing.T) {
 }
 
 func TestTimeout(t *testing.T) {
-	fakeTest := testing.T{}
-	g := Goblin(&fakeTest, "-goblin.timeout=10ms")
+	g := Goblin(t, "-goblin.timeout=10ms")
 
 	g.Describe("Test", func() {
 		g.It("Should fail if test exceeds the specified timeout with sync test", func() {
+			g.ExpectFail()
 			time.Sleep(100 * time.Millisecond)
 		})
 
 		g.It("Should fail if test exceeds the specified timeout with async test", func(done Done) {
+			g.ExpectFail()
 			time.Sleep(100 * time.Millisecond)
 			done()
 		})
 	})
-
-	if !fakeTest.Failed() {
-		t.Fatal()
-	}
 }
