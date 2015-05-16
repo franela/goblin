@@ -104,15 +104,20 @@ type Failure struct {
 }
 
 type It struct {
-	h        interface{}
-	name     string
-	parent   *Describe
-	failure  *Failure
-	reporter Reporter
-	isAsync  bool
+	h           interface{}
+	name        string
+	parent      *Describe
+	failure     *Failure
+	reporter    Reporter
+	isAsync     bool
+	expectFail  bool
+	expectPanic bool
+	paniced     bool
+	panicmsg    interface{}
 }
 
 func (it *It) run(g *G) bool {
+	defer recov()
 	g.currentIt = it
 
 	if it.h == nil {
@@ -126,9 +131,22 @@ func (it *It) run(g *G) bool {
 
 	it.parent.runAfterEach()
 
+	if it.paniced && !it.expectPanic {
+		it.failed(fmt.Sprintf("Caught unexpected panic %v", it.panicmsg), ResolveStack(0))
+	} else if !it.paniced && it.expectPanic {
+		it.failed("Expected panic, got nothing", ResolveStack(0))
+	}
+
 	failed := false
 	if it.failure != nil {
 		failed = true
+	}
+
+	if it.expectFail {
+		failed = !failed
+		if failed {
+			it.failed("Expected test to fail, but it passed", ResolveStack(0))
+		}
 	}
 
 	if failed {
@@ -137,6 +155,8 @@ func (it *It) run(g *G) bool {
 	} else {
 		g.reporter.itPassed(it.name)
 	}
+
+	g.currentIt = nil //Set currentIt back to nil - used to test if we are currently in an 'it' block
 	return failed
 }
 
@@ -155,6 +175,7 @@ func init() {
 }
 
 func Goblin(t *testing.T, arguments ...string) *G {
+	defer recov()
 	var gobtimeout = timeout
 	if arguments != nil {
 		//Programatic flags
@@ -176,14 +197,17 @@ func Goblin(t *testing.T, arguments ...string) *G {
 
 func runIt(g *G, h interface{}) {
 	defer timeTrack(time.Now(), g)
+	defer recov()
 	g.timedOut = false
 	g.shouldContinue = make(chan bool)
 	if call, ok := h.(func()); ok {
 		// the test is synchronous
-		go func() { call(); g.shouldContinue <- true }()
+		go func() { defer g.catch(); call(); g.shouldContinue <- true }()
 	} else if call, ok := h.(func(Done)); ok {
 		doneCalled := 0
+
 		go func() {
+			defer g.catch()
 			call(func(msg ...interface{}) {
 				if len(msg) > 0 {
 					g.Fail(msg)
@@ -256,7 +280,38 @@ func (g *G) AfterEach(h func()) {
 }
 
 func (g *G) Assert(src interface{}) *Assertion {
-	return &Assertion{src: src, fail: g.Fail}
+	a := &Assertion{src: src, fail: g.Fail}
+	n := &NotAssertion{src: src, fail: g.Fail}
+	a.Not = n
+	n.Not = a
+	return a
+}
+
+func (g *G) ExpectFail() {
+	if g.currentIt == nil {
+		panic("ExpectFail called outside It block!")
+	}
+
+	g.currentIt.expectFail = true
+}
+
+func (g *G) ExpectPanic() {
+	if g.currentIt == nil {
+		panic("ExpectPanic called outside It block!")
+	}
+
+	g.currentIt.expectPanic = true
+}
+
+func (g *G) catch() {
+	r := recover()
+
+	g.currentIt.paniced = (r != nil)
+	g.currentIt.panicmsg = r
+
+	if g.currentIt.paniced {
+		g.shouldContinue <- true
+	}
 }
 
 func timeTrack(start time.Time, g *G) {
@@ -275,5 +330,12 @@ func (g *G) Fail(error interface{}) {
 	if !g.timedOut {
 		//Stop test function execution
 		runtime.Goexit()
+	}
+}
+
+func recov() {
+	if r := recover(); r != nil {
+		fmt.Println("Caught panic:")
+		fmt.Println(r)
 	}
 }

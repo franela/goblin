@@ -22,20 +22,15 @@ func TestAddNumbersSucceed(t *testing.T) {
 }
 
 func TestAddNumbersFails(t *testing.T) {
-	fakeTest := testing.T{}
-
-	g := Goblin(&fakeTest)
+	g := Goblin(t)
 
 	g.Describe("Numbers", func() {
 		g.It("Should add numbers", func() {
+			g.ExpectFail()
 			sum := 1 + 1
 			g.Assert(sum).Equal(4)
 		})
 	})
-
-	if !fakeTest.Failed() {
-		t.Fatal()
-	}
 }
 
 func TestMultipleIts(t *testing.T) {
@@ -54,7 +49,7 @@ func TestMultipleIts(t *testing.T) {
 		g.It("Should add numbers", func() {
 			count++
 			sum := 1 + 1
-			g.Assert(sum).Equal(4)
+			g.Assert(sum).Equal(2)
 		})
 	})
 
@@ -83,7 +78,7 @@ func TestMultipleDescribes(t *testing.T) {
 			g.It("Should substract numbers ", func() {
 				count++
 				sub := 5 - 5
-				g.Assert(sub).Equal(1)
+				g.Assert(sub).Equal(0)
 			})
 		})
 	})
@@ -157,40 +152,38 @@ func TestNotRunBeforesOrAfters(t *testing.T) {
 }
 
 func TestFailOnError(t *testing.T) {
-	fakeTest := testing.T{}
-
-	g := Goblin(&fakeTest)
+	g := Goblin(t)
 
 	g.Describe("Numbers", func() {
 		g.It("Does something", func() {
+			g.ExpectFail()
 			g.Fail("Something")
 		})
 	})
 
 	g.Describe("Errors", func() {
 		g.It("Should fail with structs ", func() {
+			g.ExpectFail()
 			var s struct{ error string }
 			s.error = "Error"
 			g.Fail(s)
 		})
 	})
-
-	if !fakeTest.Failed() {
-		t.Fatal()
-	}
 }
 
 func TestFailImmediately(t *testing.T) {
-	fakeTest := testing.T{}
-	g := Goblin(&fakeTest)
+	g := Goblin(t)
+
 	reached := false
 	g.Describe("Errors", func() {
 		g.It("Should fail immediately for sync test ", func() {
+			g.ExpectFail()
 			g.Assert(false).IsTrue()
 			reached = true
 			g.Assert("foo").Equal("bar")
 		})
 		g.It("Should fail immediately for async test ", func(done Done) {
+			g.ExpectFail()
 			go func() {
 				g.Assert(false).IsTrue()
 				reached = true
@@ -206,14 +199,15 @@ func TestFailImmediately(t *testing.T) {
 }
 
 func TestAsync(t *testing.T) {
-	fakeTest := testing.T{}
-	g := Goblin(&fakeTest)
+	g := Goblin(t)
 
 	g.Describe("Async test", func() {
 		g.It("Should fail when Fail is called immediately", func(done Done) {
-			g.Fail("Failed")
+			g.ExpectFail()
+			g.Fail("Normally failed")
 		})
 		g.It("Should fail when fail is called", func(done Done) {
+			g.ExpectFail()
 			go func() {
 				time.Sleep(100 * time.Millisecond)
 				g.Fail("foo is not bar")
@@ -221,6 +215,7 @@ func TestAsync(t *testing.T) {
 		})
 
 		g.It("Should fail if done receives a parameter ", func(done Done) {
+			g.ExpectFail()
 			go func() {
 				time.Sleep(100 * time.Millisecond)
 				done("Error")
@@ -235,6 +230,7 @@ func TestAsync(t *testing.T) {
 		})
 
 		g.It("Should fail if done has been called multiple times", func(done Done) {
+			g.ExpectFail()
 			go func() {
 				time.Sleep(100 * time.Millisecond)
 				done()
@@ -242,28 +238,21 @@ func TestAsync(t *testing.T) {
 			}()
 		})
 	})
-
-	if !fakeTest.Failed() {
-		t.Fatal()
-	}
 }
 
 func TestTimeout(t *testing.T) {
-	fakeTest := testing.T{}
-	g := Goblin(&fakeTest, "-goblin.timeout=10ms")
+	g := Goblin(t, "-goblin.timeout=10ms")
 
 	g.Describe("Test", func() {
 		g.It("Should fail if test exceeds the specified timeout with sync test", func() {
+			g.ExpectFail()
 			time.Sleep(100 * time.Millisecond)
 		})
 
 		g.It("Should fail if test exceeds the specified timeout with async test", func(done Done) {
+			g.ExpectFail()
 			time.Sleep(100 * time.Millisecond)
 			done()
 		})
 	})
-
-	if !fakeTest.Failed() {
-		t.Fatal()
-	}
 }
