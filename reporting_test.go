@@ -103,7 +103,7 @@ func TestReportingTime(t *testing.T) {
 	g.Describe("One", func() {
 		g.AfterEach(func() {
 			//TODO: Make this an assertion
-			if int64(reporter.executionTime/time.Millisecond) < 5 || int64(reporter.executionTime/time.Millisecond) >= 6 {
+			if i := int64(reporter.executionTime / time.Millisecond); i < 5 || i > 6 {
 				t.FailNow()
 			}
 		})
