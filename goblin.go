@@ -202,7 +202,6 @@ func runIt(g *G, h interface{}) {
 	select {
 	case <-g.shouldContinue:
 	case <-time.After(g.timeout):
-		fmt.Println("Timedout")
 		//Set to nil as it shouldn't continue
 		g.shouldContinue = nil
 		g.timedOut = true
