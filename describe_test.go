@@ -26,7 +26,7 @@ func TestBefore(t *testing.T) {
 	})
 
 	if fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -52,7 +52,7 @@ func TestMultipleBefore(t *testing.T) {
 	})
 
 	if fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -85,7 +85,7 @@ func TestNestedBefore(t *testing.T) {
 	})
 
 	if fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -110,7 +110,7 @@ func TestAfter(t *testing.T) {
 	})
 
 	if fakeTest.Failed() || after != 1 {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -136,7 +136,7 @@ func TestMultipleAfter(t *testing.T) {
 	})
 
 	if fakeTest.Failed() && after != 2 {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -168,6 +168,6 @@ func TestNestedAfter(t *testing.T) {
 	})
 
 	if fakeTest.Failed() || after != 2 {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }

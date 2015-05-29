@@ -17,7 +17,7 @@ func TestAddNumbersSucceed(t *testing.T) {
 	})
 
 	if fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -34,7 +34,7 @@ func TestAddNumbersFails(t *testing.T) {
 	})
 
 	if !fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -59,7 +59,7 @@ func TestMultipleIts(t *testing.T) {
 	})
 
 	if count != 2 {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -89,7 +89,7 @@ func TestMultipleDescribes(t *testing.T) {
 	})
 
 	if count != 2 {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -109,7 +109,7 @@ func TestPending(t *testing.T) {
 	})
 
 	if fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -152,7 +152,7 @@ func TestNotRunBeforesOrAfters(t *testing.T) {
 	})
 
 	if count != 0 {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -176,7 +176,7 @@ func TestFailOnError(t *testing.T) {
 	})
 
 	if !fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -201,7 +201,7 @@ func TestFailImmediately(t *testing.T) {
 	})
 
 	if reached {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -244,7 +244,7 @@ func TestAsync(t *testing.T) {
 	})
 
 	if !fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
 
@@ -264,6 +264,6 @@ func TestTimeout(t *testing.T) {
 	})
 
 	if !fakeTest.Failed() {
-		t.Fatal()
+		t.Fatal("Failed")
 	}
 }
