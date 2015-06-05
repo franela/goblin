@@ -40,7 +40,7 @@ func (a *Assertion) Eql(dst interface{}) {
 
 func (a *Assertion) Equal(dst interface{}) {
 	if !objectsAreEqual(a.src, dst) {
-		a.fail(fmt.Sprintf("%v %s %v", a.src, "does not equal", dst))
+		a.fail(fmt.Sprintf("%#v %s %#v", a.src, "does not equal", dst))
 	}
 }
 
