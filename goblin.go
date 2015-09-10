@@ -28,7 +28,7 @@ func (g *G) Describe(name string, h func()) {
 
 	g.parent = d.parent
 
-	if g.parent == nil {
+	if g.parent == nil && d.hasTests {
 		g.reporter.begin()
 		if d.run(g) {
 			g.t.Fail()
