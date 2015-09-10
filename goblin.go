@@ -3,6 +3,7 @@ package goblin
 import (
 	"flag"
 	"fmt"
+	"regexp"
 	"runtime"
 	"testing"
 	"time"
@@ -144,25 +145,27 @@ func (it *It) failed(msg string, stack []string) {
 	it.failure = &Failure{stack: stack, message: msg, testName: it.parent.name + " " + it.name}
 }
 
-var timeout *time.Duration
-var isTty *bool
+func parseFlags() {
+	//Flag parsing
+	flag.Parse()
+	if *regexParam != "" {
+		runRegex = regexp.MustCompile(*regexParam)
+	} else {
+		runRegex = nil
+	}
+}
+
+var timeout = flag.Duration("goblin.timeout", 5*time.Second, "Sets default timeouts for all tests")
+var isTty = flag.Bool("goblin.tty", true, "Sets the default output format (color / monochrome)")
+var regexParam = flag.String("goblin.run", "", "Runs only tests which match the supplied regex")
+var runRegex *regexp.Regexp
 
 func init() {
-	//Flag parsing
-	timeout = flag.Duration("goblin.timeout", 5*time.Second, "Sets default timeouts for all tests")
-	isTty = flag.Bool("goblin.tty", true, "Sets the default output format (color / monochrome)")
-	flag.Parse()
+	parseFlags()
 }
 
 func Goblin(t *testing.T, arguments ...string) *G {
-	var gobtimeout = timeout
-	if arguments != nil {
-		//Programatic flags
-		var args = flag.NewFlagSet("Goblin arguments", flag.ContinueOnError)
-		gobtimeout = args.Duration("goblin.timeout", 5*time.Second, "Sets timeouts for tests")
-		args.Parse(arguments)
-	}
-	g := &G{t: t, timeout: *gobtimeout}
+	g := &G{t: t, timeout: *timeout}
 	var fancy TextFancier
 	if *isTty {
 		fancy = &TerminalFancier{}
@@ -224,12 +227,21 @@ func (g *G) SetReporter(r Reporter) {
 }
 
 func (g *G) It(name string, h ...interface{}) {
-	it := &It{name: name, parent: g.parent, reporter: g.reporter}
-	notifyParents(g.parent)
-	if len(h) > 0 {
-		it.h = h[0]
+	if matchesRegex(name) {
+		it := &It{name: name, parent: g.parent, reporter: g.reporter}
+		notifyParents(g.parent)
+		if len(h) > 0 {
+			it.h = h[0]
+		}
+		g.parent.children = append(g.parent.children, Runnable(it))
 	}
-	g.parent.children = append(g.parent.children, Runnable(it))
+}
+
+func matchesRegex(value string) bool {
+	if runRegex != nil {
+		return runRegex.MatchString(value)
+	}
+	return true
 }
 
 func notifyParents(d *Describe) {

@@ -1,6 +1,7 @@
 package goblin
 
 import (
+	"os"
 	"testing"
 	"time"
 )
@@ -180,6 +181,30 @@ func TestFailOnError(t *testing.T) {
 	}
 }
 
+func TestRegex(t *testing.T) {
+	fakeTest := testing.T{}
+	os.Args = append(os.Args, "-goblin.run=matches")
+	parseFlags()
+	g := Goblin(&fakeTest)
+
+	g.Describe("Test", func() {
+		g.It("Doesn't match regex", func() {
+			g.Fail("Regex shouldn't match")
+		})
+
+		g.It("It matches regex", func() {})
+		g.It("It also matches", func() {})
+	})
+
+	if fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+
+	// Reset the regex so other tests can run
+	runRegex = nil
+
+}
+
 func TestFailImmediately(t *testing.T) {
 	fakeTest := testing.T{}
 	g := Goblin(&fakeTest)
@@ -250,7 +275,9 @@ func TestAsync(t *testing.T) {
 
 func TestTimeout(t *testing.T) {
 	fakeTest := testing.T{}
-	g := Goblin(&fakeTest, "-goblin.timeout=10ms")
+	os.Args = append(os.Args, "-goblin.timeout=10ms", "-goblin.run=")
+	parseFlags()
+	g := Goblin(&fakeTest)
 
 	g.Describe("Test", func() {
 		g.It("Should fail if test exceeds the specified timeout with sync test", func() {
