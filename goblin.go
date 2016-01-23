@@ -72,31 +72,28 @@ func (d *Describe) runAfterEach() {
 }
 
 func (d *Describe) run(g *G) bool {
-	g.reporter.beginDescribe(d.name)
-
-	failed := ""
-
+	failed := false
 	if d.hasTests {
+		g.reporter.beginDescribe(d.name)
+
 		for _, b := range d.befores {
 			b()
 		}
-	}
 
-	for _, r := range d.children {
-		if r.run(g) {
-			failed = "true"
+		for _, r := range d.children {
+			if r.run(g) {
+				failed = true
+			}
 		}
-	}
 
-	if d.hasTests {
 		for _, a := range d.afters {
 			a()
 		}
+
+		g.reporter.endDescribe()
 	}
 
-	g.reporter.endDescribe()
-
-	return failed != ""
+	return failed
 }
 
 type Failure struct {
