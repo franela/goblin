@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"runtime"
+	"sync"
 	"testing"
 	"time"
 )
@@ -179,14 +180,16 @@ func Goblin(t *testing.T, arguments ...string) *G {
 
 func runIt(g *G, h interface{}) {
 	defer timeTrack(time.Now(), g)
+	g.mutex.Lock()
 	g.timedOut = false
+	g.mutex.Unlock()
 	g.shouldContinue = make(chan bool)
 	if call, ok := h.(func()); ok {
 		// the test is synchronous
-		go func() { call(); g.shouldContinue <- true }()
+		go func(c chan bool) { call(); c <- true }(g.shouldContinue)
 	} else if call, ok := h.(func(Done)); ok {
 		doneCalled := 0
-		go func() {
+		go func(c chan bool) {
 			call(func(msg ...interface{}) {
 				if len(msg) > 0 {
 					g.Fail(msg)
@@ -195,10 +198,10 @@ func runIt(g *G, h interface{}) {
 					if doneCalled > 1 {
 						g.Fail("Done called multiple times")
 					}
-					g.shouldContinue <- true
+					c <- true
 				}
 			})
-		}()
+		}(g.shouldContinue)
 	} else {
 		panic("Not implemented.")
 	}
@@ -220,6 +223,7 @@ type G struct {
 	reporter       Reporter
 	timedOut       bool
 	shouldContinue chan bool
+	mutex          sync.Mutex
 }
 
 func (g *G) SetReporter(r Reporter) {
@@ -283,9 +287,11 @@ func (g *G) Fail(error interface{}) {
 	if g.shouldContinue != nil {
 		g.shouldContinue <- true
 	}
-
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
 	if !g.timedOut {
 		//Stop test function execution
 		runtime.Goexit()
 	}
+
 }
