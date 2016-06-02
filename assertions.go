@@ -11,22 +11,6 @@ type Assertion struct {
 	fail func(interface{})
 }
 
-func objectsAreEqual(a, b interface{}) bool {
-	if reflect.TypeOf(a) != reflect.TypeOf(b) {
-		return false
-	}
-
-	if reflect.DeepEqual(a, b) {
-		return true
-	}
-
-	if fmt.Sprintf("%#v", a) == fmt.Sprintf("%#v", b) {
-		return true
-	}
-
-	return false
-}
-
 func formatMessages(messages ...string) string {
 	if len(messages) > 0 {
 		return ", " + strings.Join(messages, " ")
@@ -39,20 +23,36 @@ func (a *Assertion) Eql(dst interface{}) {
 }
 
 func (a *Assertion) Equal(dst interface{}) {
-	if !objectsAreEqual(a.src, dst) {
-		a.fail(fmt.Sprintf("%#v %s %#v", a.src, "does not equal", dst))
+	if e := a.equal(dst); e != nil {
+		a.fail(e)
 	}
 }
 
+func (a *Assertion) equal(dst interface{}) error {
+	if at, dt := reflect.TypeOf(a.src), reflect.TypeOf(dst); at != dt {
+		return fmt.Errorf("%s(%#v) does not equal %s(%#v)", at, a.src, dt, dst)
+	}
+
+	if reflect.DeepEqual(a.src, dst) {
+		return nil
+	}
+
+	if fmt.Sprintf("%#v", a.src) == fmt.Sprintf("%#v", dst) {
+		return nil
+	}
+
+	return fmt.Errorf("%#v does not equal %#v", a.src, dst)
+}
+
 func (a *Assertion) IsTrue(messages ...string) {
-	if !objectsAreEqual(a.src, true) {
+	if a.equal(true) != nil {
 		message := fmt.Sprintf("%v %s%s", a.src, "expected false to be truthy", formatMessages(messages...))
 		a.fail(message)
 	}
 }
 
 func (a *Assertion) IsFalse(messages ...string) {
-	if !objectsAreEqual(a.src, false) {
+	if a.equal(false) != nil {
 		message := fmt.Sprintf("%v %s%s", a.src, "expected true to be falsey", formatMessages(messages...))
 		a.fail(message)
 	}
