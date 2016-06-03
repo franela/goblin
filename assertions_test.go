@@ -58,20 +58,6 @@ func TestEqual(t *testing.T) {
 	verifier.Verify(t)
 	a.Eql("baz")
 	verifier.Verify(t)
-
-	verifier = AssertionVerifier{ShouldPass: false}
-	a = Assertion{src: String("baz"), fail: verifier.FailFunc}
-	a.Equal([]byte("baz"))
-	verifier.Verify(t)
-	a.Eql([]byte("baz"))
-	verifier.Verify(t)
-
-	verifier = AssertionVerifier{ShouldPass: false}
-	a = Assertion{src: int64(1), fail: verifier.FailFunc}
-	a.Equal(1)
-	verifier.Verify(t)
-	a.Eql(1)
-	verifier.Verify(t)
 }
 
 func TestIsTrue(t *testing.T) {
