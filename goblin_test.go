@@ -294,3 +294,25 @@ func TestTimeout(t *testing.T) {
 		t.Fatal("Failed")
 	}
 }
+
+func TestItTimeout(t *testing.T) {
+	fakeTest := testing.T{}
+	os.Args = append(os.Args, "-goblin.timeout=10ms")
+	parseFlags()
+	g := Goblin(&fakeTest)
+
+	g.Describe("Test", func() {
+		g.It("Should override default timeout", func() {
+			g.Timeout(20 * time.Millisecond)
+			time.Sleep(15 * time.Millisecond)
+		})
+
+		g.It("Should revert for different it", func() {
+			g.Assert(g.timeout).Equal(10 * time.Millisecond)
+		})
+
+	})
+	if fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}

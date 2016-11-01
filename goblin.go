@@ -37,6 +37,10 @@ func (g *G) Describe(name string, h func()) {
 		g.reporter.end()
 	}
 }
+func (g *G) Timeout(time time.Duration) {
+	g.timeout = time
+	g.timer.Reset(time)
+}
 
 type Describe struct {
 	name       string
@@ -180,6 +184,7 @@ func runIt(g *G, h interface{}) {
 	g.mutex.Lock()
 	g.timedOut = false
 	g.mutex.Unlock()
+	g.timer = time.NewTimer(g.timeout)
 	g.shouldContinue = make(chan bool)
 	if call, ok := h.(func()); ok {
 		// the test is synchronous
@@ -204,12 +209,14 @@ func runIt(g *G, h interface{}) {
 	}
 	select {
 	case <-g.shouldContinue:
-	case <-time.After(g.timeout):
+	case <-g.timer.C:
 		//Set to nil as it shouldn't continue
 		g.shouldContinue = nil
 		g.timedOut = true
 		g.Fail("Test exceeded " + fmt.Sprintf("%s", g.timeout))
 	}
+	// Reset timeout value
+	g.timeout = *timeout
 }
 
 type G struct {
@@ -221,6 +228,7 @@ type G struct {
 	timedOut       bool
 	shouldContinue chan bool
 	mutex          sync.Mutex
+	timer          *time.Timer
 }
 
 func (g *G) SetReporter(r Reporter) {
@@ -278,7 +286,7 @@ func timeTrack(start time.Time, g *G) {
 
 func (g *G) Fail(error interface{}) {
 	//Skips 7 stacks due to the functions between the stack and the test
-	stack := ResolveStack(4)
+	stack := ResolveStack(7)
 	message := fmt.Sprintf("%v", error)
 	g.currentIt.failed(message, stack)
 	if g.shouldContinue != nil {
