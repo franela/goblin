@@ -342,6 +342,32 @@ func TestFailOnError(t *testing.T) {
 	}
 }
 
+
+func TestFailfOnError(t *testing.T) {
+	fakeTest := testing.T{}
+
+	g := Goblin(&fakeTest)
+
+	g.Describe("Numbers", func() {
+		g.It("Does something", func() {
+			g.Failf("Something goes %s", "wrong")
+		})
+	})
+
+	g.Describe("Errors", func() {
+		g.It("Should fail with structs ", func() {
+			var s struct{ error string }
+			s.error = "Error"
+			g.Failf(s)
+		})
+	})
+
+	if !fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}
+
+
 func TestRegex(t *testing.T) {
 	fakeTest := testing.T{}
 	os.Args = append(os.Args, "-goblin.run=matches")
