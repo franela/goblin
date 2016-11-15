@@ -320,5 +320,5 @@ func (g *G) Failf(format string, args ...interface{}) {
 
 // Alias of Failf
 func (g *G) Errorf(format string, args ...interface{}) {
-	g.Failf(format string, args)
+	g.Failf(format, args)
 }
