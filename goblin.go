@@ -356,3 +356,20 @@ func (g *G) Fail(error interface{}) {
 		runtime.Goexit()
 	}
 }
+
+func (g *G) Errorf(format string, args ...interface{}) {
+	//Skips 7 stacks due to the functions between the stack and the test
+	stack := ResolveStack(7)
+	message := fmt.Sprintf(format, args)
+	g.currentIt.failed(message, stack)
+	if g.shouldContinue != nil {
+		g.shouldContinue <- true
+	}
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+	if !g.timedOut {
+		//Stop test function execution
+		runtime.Goexit()
+	}
+
+}
