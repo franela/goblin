@@ -357,7 +357,7 @@ func (g *G) Fail(error interface{}) {
 	}
 }
 
-func (g *G) Errorf(format string, args ...interface{}) {
+func (g *G) Failf(format string, args ...interface{}) {
 	//Skips 7 stacks due to the functions between the stack and the test
 	stack := ResolveStack(7)
 	message := fmt.Sprintf(format, args)
@@ -372,4 +372,9 @@ func (g *G) Errorf(format string, args ...interface{}) {
 		runtime.Goexit()
 	}
 
+}
+
+// Alias of Failf
+func (g *G) Errorf(format string, args ...interface{}) {
+	g.Failf(format string, args)
 }
