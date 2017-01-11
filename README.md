@@ -4,7 +4,7 @@ Goblin
 
 ![](https://github.com/marcosnils/goblin/blob/master/goblin_logo.jpg?raw=true)
 
-A [Mocha](http://visionmedia.github.io/mocha/) like BDD testing framework for Go
+A [Mocha](http://mochajs.org/) like BDD testing framework for Go
 
 No extensive documentation nor complicated steps to get it running
 
