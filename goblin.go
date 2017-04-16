@@ -277,6 +277,13 @@ func (g *G) AfterEach(h func()) {
 }
 
 func (g *G) Assert(src interface{}) *Assertion {
+
+	if value, isBool := src.(bool); isBool && !value {
+		assertion := &Assertion{src: src, fail: g.Fail}
+		assertion.fail("Assertion is false")
+		return assertion
+
+	}
 	return &Assertion{src: src, fail: g.Fail}
 }
 
