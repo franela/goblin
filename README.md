@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/franela/goblin.png?branch=master)](https://travis-ci.org/franela/goblin)
 Goblin
 ======
+deleteme later
 
 ![](https://github.com/marcosnils/goblin/blob/master/goblin_logo.jpg?raw=true)
 
