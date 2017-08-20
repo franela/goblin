@@ -16,6 +16,11 @@ type Runnable interface {
 	run(*G) bool
 }
 
+type Itable interface {
+	run(*G) bool
+	failed(string, []string)
+}
+
 func (g *G) Describe(name string, h func()) {
 	d := &Describe{name: name, h: h, parent: g.parent}
 
@@ -222,7 +227,7 @@ func runIt(g *G, h interface{}) {
 type G struct {
 	t              *testing.T
 	parent         *Describe
-	currentIt      *It
+	currentIt      Itable
 	timeout        time.Duration
 	reporter       Reporter
 	timedOut       bool
