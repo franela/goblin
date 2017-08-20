@@ -11,6 +11,7 @@ type FakeReporter struct {
 	fails              []string
 	passes             []string
 	pending            []string
+	excluded           []string
 	ends               int
 	failures           int
 	executionTime      time.Duration
@@ -40,6 +41,10 @@ func (r *FakeReporter) itPassed(name string) {
 
 func (r *FakeReporter) itIsPending(name string) {
 	r.pending = append(r.pending, name)
+}
+
+func (r *FakeReporter) itIsExcluded(name string) {
+	r.excluded = append(r.excluded, name)
 }
 
 func (r *FakeReporter) itTook(duration time.Duration) {
@@ -138,6 +143,30 @@ func TestReportingPending(t *testing.T) {
 	})
 
 	if !reflect.DeepEqual(reporter.pending, []string{"One", "Two"}) {
+		t.FailNow()
+	}
+}
+
+func TestReportingExcluded(t *testing.T) {
+	fakeTest := &testing.T{}
+	reporter := FakeReporter{}
+	fakeReporter := Reporter(&reporter)
+
+	g := Goblin(fakeTest)
+	g.SetReporter(fakeReporter)
+
+	g.Describe("One", func() {
+		g.Xit("One", func() {
+			g.Assert(1).Equal(1)
+		})
+		g.Describe("Two", func() {
+			g.Xit("Two", func() {
+				g.Assert(2).Equal(2)
+			})
+		})
+	})
+
+	if !reflect.DeepEqual(reporter.excluded, []string{"One", "Two"}) {
 		t.FailNow()
 	}
 }
