@@ -152,6 +152,26 @@ func (it *It) failed(msg string, stack []string) {
 	it.failure = &Failure{stack: stack, message: msg, testName: it.parent.name + " " + it.name}
 }
 
+type Xit struct {
+	h        interface{}
+	name     string
+	parent   *Describe
+	failure  *Failure
+	reporter Reporter
+	isAsync  bool
+}
+
+func (xit *Xit) run(g *G) bool {
+	g.currentIt = xit
+
+	g.reporter.itIsExcluded(xit.name)
+	return false
+}
+
+func (xit *Xit) failed(msg string, stack []string) {
+	xit.failure = nil
+}
+
 func parseFlags() {
 	//Flag parsing
 	flag.Parse()
@@ -248,6 +268,17 @@ func (g *G) It(name string, h ...interface{}) {
 			it.h = h[0]
 		}
 		g.parent.children = append(g.parent.children, Runnable(it))
+	}
+}
+
+func (g *G) Xit(name string, h ...interface{}) {
+	if matchesRegex(name) {
+		xit := &Xit{name: name, parent: g.parent, reporter: g.reporter}
+		notifyParents(g.parent)
+		if len(h) > 0 {
+			xit.h = h[0]
+		}
+		g.parent.children = append(g.parent.children, Runnable(xit))
 	}
 }
 
