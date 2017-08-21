@@ -138,6 +138,10 @@ func TestExcluded(t *testing.T) {
 
 	})
 
+	if count != 0 {
+		t.Fatal("Failed")
+	}
+
 	if fakeTest.Failed() {
 		t.Fatal("Failed")
 	}
