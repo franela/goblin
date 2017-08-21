@@ -17,6 +17,7 @@ type Reporter interface {
 	itFailed(string)
 	itPassed(string)
 	itIsPending(string)
+	itIsExcluded(string)
 }
 
 type TextFancier interface {
@@ -24,14 +25,15 @@ type TextFancier interface {
 	Gray(text string) string
 	Cyan(text string) string
 	Green(text string) string
+	Yellow(text string) string
 	WithCheck(text string) string
 }
 
 type DetailedReporter struct {
-	level, failed, passed, pending    int
-	failures                          []*Failure
-	executionTime, totalExecutionTime time.Duration
-	fancy                             TextFancier
+	level, failed, passed, pending, excluded int
+	failures                                 []*Failure
+	executionTime, totalExecutionTime        time.Duration
+	fancy                                    TextFancier
 }
 
 func (r *DetailedReporter) SetTextFancier(f TextFancier) {
@@ -55,6 +57,10 @@ func (self *TerminalFancier) Cyan(text string) string {
 
 func (self *TerminalFancier) Green(text string) string {
 	return "\033[32m" + text + "\033[0m"
+}
+
+func (self *TerminalFancier) Yellow(text string) string {
+	return "\033[33m" + text + "\033[0m"
 }
 
 func (self *TerminalFancier) WithCheck(text string) string {
@@ -107,6 +113,11 @@ func (r *DetailedReporter) itIsPending(name string) {
 	r.print(r.fancy.Cyan("- " + name))
 }
 
+func (r *DetailedReporter) itIsExcluded(name string) {
+	r.excluded++
+	r.print(r.fancy.Yellow("- " + name))
+}
+
 func (r *DetailedReporter) begin() {
 }
 
@@ -120,6 +131,11 @@ func (r *DetailedReporter) end() {
 	if r.pending > 0 {
 		pend := fmt.Sprintf("%d test(s) pending", r.pending)
 		fmt.Printf(" %v\n\n", r.fancy.Cyan(pend))
+	}
+
+	if r.excluded > 0 {
+		excl := fmt.Sprintf("%d test(s) excluded", r.excluded)
+		fmt.Printf(" %v\n\n", r.fancy.Yellow(excl))
 	}
 
 	if len(r.failures) > 0 {
