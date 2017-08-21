@@ -65,7 +65,7 @@ func Test(t *testing.T) {
         // Pending Test
         g.It("Should substract two numbers")
         // Excluded Test
-        g.It("Should add two numbers ", func() {
+        g.XIt("Should add two numbers ", func() {
             g.Assert(3+1).Equal(4)
         })
     })
