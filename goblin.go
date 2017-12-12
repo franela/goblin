@@ -187,11 +187,10 @@ var isTty = flag.Bool("goblin.tty", true, "Sets the default output format (color
 var regexParam = flag.String("goblin.run", "", "Runs only tests which match the supplied regex")
 var runRegex *regexp.Regexp
 
-func init() {
-	parseFlags()
-}
-
 func Goblin(t *testing.T, arguments ...string) *G {
+	if !flag.Parsed() {
+		parseFlags()
+	}
 	g := &G{t: t, timeout: *timeout}
 	var fancy TextFancier
 	if *isTty {
