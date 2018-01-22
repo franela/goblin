@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Assertion represents a fact stated about a source object. It contains the source object and function to call
 type Assertion struct {
 	src  interface{}
 	fail func(interface{})
@@ -34,16 +35,23 @@ func formatMessages(messages ...string) string {
 	return ""
 }
 
+// Eql is a shorthand alias of Equal for convenience
 func (a *Assertion) Eql(dst interface{}) {
 	a.Equal(dst)
 }
 
+// Equal takes a destination object and asserts that a source object and
+// destination object are equal to one another. It will fail the assertion and
+// print a corresponding message if the objects are not equivalent.
 func (a *Assertion) Equal(dst interface{}) {
 	if !objectsAreEqual(a.src, dst) {
 		a.fail(fmt.Sprintf("%#v %s %#v", a.src, "does not equal", dst))
 	}
 }
 
+// IsTrue asserts that a source is equal to true. Optional messages can be
+// provided for inclusion in the displayed message if the assertion fails. It
+// will fail the assertion if the source does not resolve to true.
 func (a *Assertion) IsTrue(messages ...string) {
 	if !objectsAreEqual(a.src, true) {
 		message := fmt.Sprintf("%v %s%s", a.src, "expected false to be truthy", formatMessages(messages...))
@@ -51,6 +59,9 @@ func (a *Assertion) IsTrue(messages ...string) {
 	}
 }
 
+// IsFalse asserts that a source is equal to false. Optional messages can be
+// provided for inclusion in the displayed message if the assertion fails. It
+// will fail the assertion if the source does not resolve to false.
 func (a *Assertion) IsFalse(messages ...string) {
 	if !objectsAreEqual(a.src, false) {
 		message := fmt.Sprintf("%v %s%s", a.src, "expected true to be falsey", formatMessages(messages...))
