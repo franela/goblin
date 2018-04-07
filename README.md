@@ -8,7 +8,7 @@ Goblin
 [![Release](https://img.shields.io/github/release/franela/goblin.svg)](https://github.com/franela/goblin/releases/latest)
 
 
-A [Mocha](http://mochajs.org/) like BDD testing framework writetn in Go that requires no additional dependencies. Requires no extensive documentation nor complicated steps to get it running.
+A [Mocha](http://mochajs.org/) like BDD testing framework written in Go that requires no additional dependencies. Requires no extensive documentation nor complicated steps to get it running.
 
 ![](https://github.com/marcosnils/goblin/blob/master/goblin_logo.jpg?raw=true)
 
