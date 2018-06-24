@@ -144,9 +144,9 @@ func (r *DetailedReporter) End() {
 	}
 
 	for i, failure := range r.failures {
-		fmt.Printf("  %d) %s:\n\n", i+1, failure.testName)
-		fmt.Printf("    %s\n", r.fancy.Red(failure.message))
-		for _, stackItem := range failure.stack {
+		fmt.Printf("  %d) %s:\n\n", i+1, failure.TestName)
+		fmt.Printf("    %s\n", r.fancy.Red(failure.Message))
+		for _, stackItem := range failure.Stack {
 			fmt.Printf("    %s\n", r.fancy.Gray(stackItem))
 		}
 	}

@@ -106,9 +106,9 @@ func (d *Describe) run(g *G) bool {
 }
 
 type Failure struct {
-	stack    []string
-	testName string
-	message  string
+	Stack    []string
+	TestName string
+	Message  string
 }
 
 type It struct {
@@ -149,7 +149,7 @@ func (it *It) run(g *G) bool {
 }
 
 func (it *It) failed(msg string, stack []string) {
-	it.failure = &Failure{stack: stack, message: msg, testName: it.parent.name + " " + it.name}
+	it.failure = &Failure{Stack: stack, Message: msg, TestName: it.parent.name + " " + it.name}
 }
 
 type Xit struct {
