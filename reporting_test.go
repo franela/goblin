@@ -19,44 +19,44 @@ type FakeReporter struct {
 	beginFlag, endFlag bool
 }
 
-func (r *FakeReporter) beginDescribe(name string) {
+func (r *FakeReporter) BeginDescribe(name string) {
 	r.describes = append(r.describes, name)
 }
 
-func (r *FakeReporter) endDescribe() {
+func (r *FakeReporter) EndDescribe() {
 	r.ends++
 }
 
-func (r *FakeReporter) failure(failure *Failure) {
+func (r *FakeReporter) Failure(failure *Failure) {
 	r.failures++
 }
 
-func (r *FakeReporter) itFailed(name string) {
+func (r *FakeReporter) ItFailed(name string) {
 	r.fails = append(r.fails, name)
 }
 
-func (r *FakeReporter) itPassed(name string) {
+func (r *FakeReporter) ItPassed(name string) {
 	r.passes = append(r.passes, name)
 }
 
-func (r *FakeReporter) itIsPending(name string) {
+func (r *FakeReporter) ItIsPending(name string) {
 	r.pending = append(r.pending, name)
 }
 
-func (r *FakeReporter) itIsExcluded(name string) {
+func (r *FakeReporter) ItIsExcluded(name string) {
 	r.excluded = append(r.excluded, name)
 }
 
-func (r *FakeReporter) itTook(duration time.Duration) {
+func (r *FakeReporter) ItTook(duration time.Duration) {
 	r.executionTime = duration
 	r.totalExecutionTime += duration
 }
 
-func (r *FakeReporter) begin() {
+func (r *FakeReporter) Begin() {
 	r.beginFlag = true
 }
 
-func (r *FakeReporter) end() {
+func (r *FakeReporter) End() {
 	r.endFlag = true
 }
 

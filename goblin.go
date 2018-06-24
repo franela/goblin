@@ -35,11 +35,11 @@ func (g *G) Describe(name string, h func()) {
 	g.parent = d.parent
 
 	if g.parent == nil && d.hasTests {
-		g.reporter.begin()
+		g.reporter.Begin()
 		if d.run(g) {
 			g.t.Fail()
 		}
-		g.reporter.end()
+		g.reporter.End()
 	}
 }
 func (g *G) Timeout(time time.Duration) {
@@ -83,7 +83,7 @@ func (d *Describe) runAfterEach() {
 func (d *Describe) run(g *G) bool {
 	failed := false
 	if d.hasTests {
-		g.reporter.beginDescribe(d.name)
+		g.reporter.BeginDescribe(d.name)
 
 		for _, b := range d.befores {
 			b()
@@ -99,16 +99,16 @@ func (d *Describe) run(g *G) bool {
 			a()
 		}
 
-		g.reporter.endDescribe()
+		g.reporter.EndDescribe()
 	}
 
 	return failed
 }
 
 type Failure struct {
-	stack    []string
-	testName string
-	message  string
+	Stack    []string
+	TestName string
+	Message  string
 }
 
 type It struct {
@@ -124,7 +124,7 @@ func (it *It) run(g *G) bool {
 	g.currentIt = it
 
 	if it.h == nil {
-		g.reporter.itIsPending(it.name)
+		g.reporter.ItIsPending(it.name)
 		return false
 	}
 	//TODO: should handle errors for beforeEach
@@ -140,16 +140,16 @@ func (it *It) run(g *G) bool {
 	}
 
 	if failed {
-		g.reporter.itFailed(it.name)
-		g.reporter.failure(it.failure)
+		g.reporter.ItFailed(it.name)
+		g.reporter.Failure(it.failure)
 	} else {
-		g.reporter.itPassed(it.name)
+		g.reporter.ItPassed(it.name)
 	}
 	return failed
 }
 
 func (it *It) failed(msg string, stack []string) {
-	it.failure = &Failure{stack: stack, message: msg, testName: it.parent.name + " " + it.name}
+	it.failure = &Failure{Stack: stack, Message: msg, TestName: it.parent.name + " " + it.name}
 }
 
 type Xit struct {
@@ -164,7 +164,7 @@ type Xit struct {
 func (xit *Xit) run(g *G) bool {
 	g.currentIt = xit
 
-	g.reporter.itIsExcluded(xit.name)
+	g.reporter.ItIsExcluded(xit.name)
 	return false
 }
 
@@ -316,7 +316,7 @@ func (g *G) Assert(src interface{}) *Assertion {
 }
 
 func timeTrack(start time.Time, g *G) {
-	g.reporter.itTook(time.Since(start))
+	g.reporter.ItTook(time.Since(start))
 }
 
 func (g *G) Fail(error interface{}) {
