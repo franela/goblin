@@ -42,21 +42,23 @@ func (g *G) Describe(name string, h func()) {
 		g.reporter.End()
 	}
 }
+
 func (g *G) Timeout(time time.Duration) {
 	g.timeout = time
 	g.timer.Reset(time)
 }
 
 type Describe struct {
-	name       string
-	h          func()
-	children   []Runnable
-	befores    []func()
-	afters     []func()
-	afterEach  []func()
-	beforeEach []func()
-	hasTests   bool
-	parent     *Describe
+	name           string
+	h              func()
+	children       []Runnable
+	befores        []func()
+	afters         []func()
+	afterEach      []func()
+	beforeEach     []func()
+	justBeforeEach []func()
+	hasTests       bool
+	parent         *Describe
 }
 
 func (d *Describe) runBeforeEach() {
@@ -65,6 +67,16 @@ func (d *Describe) runBeforeEach() {
 	}
 
 	for _, b := range d.beforeEach {
+		b()
+	}
+}
+
+func (d *Describe) runJustBeforeEach() {
+	if d.parent != nil {
+		d.parent.runJustBeforeEach()
+	}
+
+	for _, b := range d.justBeforeEach {
 		b()
 	}
 }
@@ -129,6 +141,8 @@ func (it *It) run(g *G) bool {
 	}
 	//TODO: should handle errors for beforeEach
 	it.parent.runBeforeEach()
+
+	it.parent.runJustBeforeEach()
 
 	runIt(g, it.h)
 
@@ -303,6 +317,10 @@ func (g *G) BeforeEach(h func()) {
 	g.parent.beforeEach = append(g.parent.beforeEach, h)
 }
 
+func (g *G) JustBeforeEach(h func()) {
+	g.parent.justBeforeEach = append(g.parent.justBeforeEach, h)
+}
+
 func (g *G) After(h func()) {
 	g.parent.afters = append(g.parent.afters, h)
 }
@@ -333,5 +351,4 @@ func (g *G) Fail(error interface{}) {
 		//Stop test function execution
 		runtime.Goexit()
 	}
-
 }
