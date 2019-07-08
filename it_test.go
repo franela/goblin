@@ -104,7 +104,7 @@ func TestAfterEach(t *testing.T) {
 			g.Assert(after).Equal(0)
 		})
 
-		g.It("Should have called afterEach before this test ", func() {
+		g.It("Should have called afterEach before this test", func() {
 			g.Assert(after).Equal(1)
 		})
 	})
