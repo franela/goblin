@@ -1,6 +1,10 @@
 package goblin
 
-import "testing"
+import (
+	"fmt"
+	"strconv"
+	"testing"
+)
 
 // So we can test asserting type against its type alias
 type String string
@@ -28,7 +32,40 @@ func (a *AssertionVerifier) VerifyMessage(t *testing.T, message string) {
 	if a.msg.(string) != message {
 		t.Fatalf(`"%s" != "%s"`, a.msg, message)
 	}
+}
 
+// Verify that a slice of messages is formatted as expected.
+func verifyFormat(t *testing.T, expected string, messages ...interface{}) {
+	// Prepend the expected comma if there is at least one message.
+	if len(messages) != 0 {
+		expected = ", " + expected
+	}
+
+	message := formatMessages(messages...)
+	if message != expected {
+		t.Fatalf(`Message format: "%s" != "%s"`, message, expected)
+	}
+}
+
+// Test that messages for assertions are formatted as expected.
+func TestFormatMessages(t *testing.T) {
+	message := "foo bar"
+
+	// No message.
+	verifyFormat(t, "")
+
+	// Single message.
+	verifyFormat(t, "[]", "")
+	verifyFormat(t, "[	]", "	")
+	verifyFormat(t, "<nil>", nil)
+	verifyFormat(t, message, message)
+	verifyFormat(t, message, fmt.Errorf("%s", message))
+	num := 12345
+	verifyFormat(t, strconv.Itoa(num), num)
+
+	// Multiple messages.
+	verifyFormat(t, "[] [ ]", "", " ")
+	verifyFormat(t, message+" "+message, message, message)
 }
 
 func TestEqual(t *testing.T) {
@@ -58,6 +95,15 @@ func TestEqual(t *testing.T) {
 	verifier.Verify(t)
 	a.Eql("baz")
 	verifier.Verify(t)
+}
+
+// Test Equal() outputs the correct message upon failure.
+func TestEqualWithMessage(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: 1, fail: verifier.FailFunc}
+	msg := "foo is not bar"
+	a.Equal(0, msg)
+	verifier.VerifyMessage(t, "1 does not equal 0, "+msg)
 }
 
 func TestIsTrue(t *testing.T) {
