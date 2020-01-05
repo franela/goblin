@@ -80,8 +80,8 @@ func TestMultipleDescribes(t *testing.T) {
 			})
 		})
 
-		g.Describe("Substraction", func() {
-			g.It("Should substract numbers ", func() {
+		g.Describe("Subtraction", func() {
+			g.It("Should subtract numbers", func() {
 				count++
 				sub := 5 - 5
 				g.Assert(sub).Equal(1)
@@ -103,8 +103,8 @@ func TestPending(t *testing.T) {
 
 		g.It("Should add numbers")
 
-		g.Describe("Substraction", func() {
-			g.It("Should substract numbers")
+		g.Describe("Subtraction", func() {
+			g.It("Should subtract numbers")
 		})
 
 	})
@@ -128,8 +128,8 @@ func TestExcluded(t *testing.T) {
 			g.Assert(sum).Equal(2)
 		})
 
-		g.Describe("Substraction", func() {
-			g.Xit("Should substract numbers", func() {
+		g.Describe("Subtraction", func() {
+			g.Xit("Should subtract numbers", func() {
 				count++
 				sub := 5 - 5
 				g.Assert(sub).Equal(1)
@@ -287,7 +287,7 @@ func TestFailOnError(t *testing.T) {
 	})
 
 	g.Describe("Errors", func() {
-		g.It("Should fail with structs ", func() {
+		g.It("Should fail with structs", func() {
 			var s struct{ error string }
 			s.error = "Error"
 			g.Fail(s)
@@ -327,12 +327,12 @@ func TestFailImmediately(t *testing.T) {
 	g := Goblin(&fakeTest)
 	reached := false
 	g.Describe("Errors", func() {
-		g.It("Should fail immediately for sync test ", func() {
+		g.It("Should fail immediately for sync test", func() {
 			g.Assert(false).IsTrue()
 			reached = true
 			g.Assert("foo").Equal("bar")
 		})
-		g.It("Should fail immediately for async test ", func(done Done) {
+		g.It("Should fail immediately for async test", func(done Done) {
 			go func() {
 				g.Assert(false).IsTrue()
 				reached = true
@@ -355,14 +355,14 @@ func TestAsync(t *testing.T) {
 		g.It("Should fail when Fail is called immediately", func(done Done) {
 			g.Fail("Failed")
 		})
-		g.It("Should fail when fail is called", func(done Done) {
+		g.It("Should fail when Fail is called", func(done Done) {
 			go func() {
 				time.Sleep(100 * time.Millisecond)
 				g.Fail("foo is not bar")
 			}()
 		})
 
-		g.It("Should fail if done receives a parameter ", func(done Done) {
+		g.It("Should fail if done receives a parameter", func(done Done) {
 			go func() {
 				time.Sleep(100 * time.Millisecond)
 				done("Error")
