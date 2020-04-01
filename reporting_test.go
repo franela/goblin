@@ -23,6 +23,10 @@ func (r *FakeReporter) BeginDescribe(name string) {
 	r.describes = append(r.describes, name)
 }
 
+func (r *FakeReporter) BeginXdescribe(name string) {
+	r.BeginDescribe(name)
+}
+
 func (r *FakeReporter) EndDescribe() {
 	r.ends++
 }
