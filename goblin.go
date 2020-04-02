@@ -166,6 +166,14 @@ func (it *It) failed(msg string, stack []string) {
 	it.failure = &Failure{Stack: stack, Message: msg, TestName: it.parent.name + " " + it.name}
 }
 
+type Skip struct {
+	g *G
+}
+
+func (s *Skip) It(name string, h ...interface{}) {
+	s.g.Xit(name, h)
+}
+
 type Xit struct {
 	h        interface{}
 	name     string
@@ -206,6 +214,9 @@ func Goblin(t *testing.T, arguments ...string) *G {
 		parseFlags()
 	}
 	g := &G{t: t, timeout: *timeout}
+	g.Skip = Skip{
+		g: g,
+	}
 	var fancy TextFancier
 	if *isTty {
 		fancy = &TerminalFancier{}
@@ -267,6 +278,7 @@ type G struct {
 	shouldContinue chan bool
 	mutex          sync.Mutex
 	timer          *time.Timer
+	Skip           Skip
 }
 
 func (g *G) SetReporter(r Reporter) {
