@@ -1,7 +1,9 @@
 package goblin
 
 import (
+	"bytes"
 	"os"
+	"os/exec"
 	"testing"
 	"time"
 )
@@ -430,6 +432,51 @@ func TestItTimeout(t *testing.T) {
 
 	})
 	if fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}
+
+func TestItRegexExec(t *testing.T) {
+
+	cs := []string{"-test.run=TestHandleItRegexExec", "-goblin.run=TestsrunPass"}
+	cmd := exec.Command(os.Args[0], cs...)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		t.Fatalf("Failed, error:%s", err)
+	}
+	_, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+	if errStr != "" {
+		t.Fatalf("Failed, errorStr:%s", errStr)
+	}
+}
+
+func TestHandleItRegexExec(t *testing.T) {
+
+	g := Goblin(t)
+
+	counter := 0
+	g.Describe("TestItRegexExec Helper", func() {
+		g.It("TestsrunFail", func() {
+			counter++
+			g.Assert(counter).Equal(counter)
+		})
+
+		g.It("TestsrunPass", func() {
+			counter++
+			g.Assert(counter).Equal(counter)
+		})
+
+		g.It("TestsrunPass", func() {
+			counter++
+			g.Assert(counter).Equal(counter)
+		})
+	})
+
+	if *regexParam != "" && counter != 2 {
 		t.Fatal("Failed")
 	}
 }
