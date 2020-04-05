@@ -189,11 +189,6 @@ func (xit *Xit) failed(msg string, stack []string) {
 func parseFlags() {
 	//Flag parsing
 	flag.Parse()
-	if *regexParam != "" {
-		runRegex = regexp.MustCompile(*regexParam)
-	} else {
-		runRegex = nil
-	}
 }
 
 var timeout = flag.Duration("goblin.timeout", 5*time.Second, "Sets default timeouts for all tests")
@@ -295,8 +290,27 @@ func (g *G) Xit(name string, h ...interface{}) {
 	}
 }
 
+func setRegex(param string) {
+	if param == "" {
+		return
+	}
+
+	isNotSet := runRegex == nil
+	if isNotSet {
+		runRegex = regexp.MustCompile(param)
+		return
+	}
+
+	isChanged := runRegex.String() != param
+	if isChanged {
+		runRegex = regexp.MustCompile(param)
+	}
+}
+
 func matchesRegex(value string) bool {
-	if runRegex != nil {
+	param := *regexParam
+	setRegex(param)
+	if param != "" {
 		return runRegex.MatchString(value)
 	}
 	return true

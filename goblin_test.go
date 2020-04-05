@@ -317,9 +317,6 @@ func TestRegex(t *testing.T) {
 	if fakeTest.Failed() {
 		t.Fatal("Failed")
 	}
-
-	// Reset the regex so other tests can run
-	runRegex = nil
 }
 
 func TestFailImmediately(t *testing.T) {
