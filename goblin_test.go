@@ -346,7 +346,10 @@ func TestFailImmediately(t *testing.T) {
 
 func TestAsync(t *testing.T) {
 	fakeTest := testing.T{}
+
+	os.Args = append(os.Args, "-goblin.run=")
 	g := Goblin(&fakeTest)
+	parseFlags()
 
 	g.Describe("Async test", func() {
 		g.It("Should fail when Fail is called immediately", func(done Done) {
