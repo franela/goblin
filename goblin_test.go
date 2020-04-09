@@ -6,6 +6,49 @@ import (
 	"time"
 )
 
+func TestAsync(t *testing.T) {
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest)
+
+	g.Describe("Async test", func() {
+		g.It("Should fail when Fail is called immediately", func(done Done) {
+			g.Fail("Failed")
+		})
+		g.It("Should fail when Fail is called", func(done Done) {
+			go func() {
+				time.Sleep(100 * time.Millisecond)
+				g.Fail("foo is not bar")
+			}()
+		})
+
+		g.It("Should fail if done receives a parameter", func(done Done) {
+			go func() {
+				time.Sleep(100 * time.Millisecond)
+				done("Error")
+			}()
+		})
+
+		g.It("Should pass when done is called", func(done Done) {
+			go func() {
+				time.Sleep(100 * time.Millisecond)
+				done()
+			}()
+		})
+
+		g.It("Should fail if done has been called multiple times", func(done Done) {
+			go func() {
+				time.Sleep(100 * time.Millisecond)
+				done()
+				done()
+			}()
+		})
+	})
+
+	if !fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}
+
 func TestAddNumbersSucceed(t *testing.T) {
 	fakeTest := testing.T{}
 	g := Goblin(&fakeTest)
@@ -343,49 +386,6 @@ func TestFailImmediately(t *testing.T) {
 	})
 
 	if reached {
-		t.Fatal("Failed")
-	}
-}
-
-func TestAsync(t *testing.T) {
-	fakeTest := testing.T{}
-	g := Goblin(&fakeTest)
-
-	g.Describe("Async test", func() {
-		g.It("Should fail when Fail is called immediately", func(done Done) {
-			g.Fail("Failed")
-		})
-		g.It("Should fail when Fail is called", func(done Done) {
-			go func() {
-				time.Sleep(100 * time.Millisecond)
-				g.Fail("foo is not bar")
-			}()
-		})
-
-		g.It("Should fail if done receives a parameter", func(done Done) {
-			go func() {
-				time.Sleep(100 * time.Millisecond)
-				done("Error")
-			}()
-		})
-
-		g.It("Should pass when done is called", func(done Done) {
-			go func() {
-				time.Sleep(100 * time.Millisecond)
-				done()
-			}()
-		})
-
-		g.It("Should fail if done has been called multiple times", func(done Done) {
-			go func() {
-				time.Sleep(100 * time.Millisecond)
-				done()
-				done()
-			}()
-		})
-	})
-
-	if !fakeTest.Failed() {
 		t.Fatal("Failed")
 	}
 }
