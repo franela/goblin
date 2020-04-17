@@ -71,6 +71,13 @@ func Test(t *testing.T) {
             g.Assert(3+1).Equal(4)
         })
     })
+
+    g.Skip.Describe("Skip all tests in this block", func(){
+        // Skipped
+        g.It("Should not run", func() {
+            g.Assert(2).Equal(4)
+        })
+    })
 }
 ```
 
