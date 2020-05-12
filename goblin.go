@@ -274,6 +274,9 @@ func (g *G) SetReporter(r Reporter) {
 func (g *G) It(name string, h ...interface{}) {
 	if matchesRegex(name) {
 		it := &It{name: name, parent: g.parent, reporter: g.reporter}
+		if g.parent == nil {
+			panic(fmt.Sprintf("It(\"%s\") block should be written inside Describe() block.", name))
+		}
 		notifyParents(g.parent)
 		if len(h) > 0 {
 			it.h = h[0]
@@ -339,6 +342,9 @@ func (g *G) Fail(error interface{}) {
 	//Skips 7 stacks due to the functions between the stack and the test
 	stack := ResolveStack(7)
 	message := fmt.Sprintf("%v", error)
+	if g.currentIt == nil {
+		panic("Asserts should be written inside an It() block.")
+	}
 	g.currentIt.failed(message, stack)
 	if g.shouldContinue != nil {
 		g.shouldContinue <- true
