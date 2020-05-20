@@ -107,9 +107,9 @@ func TestReportingTime(t *testing.T) {
 
 	g.Describe("One", func() {
 		g.AfterEach(func() {
-			//TODO: Make this an assertion
-			if int64(reporter.executionTime/time.Millisecond) < 5 || int64(reporter.executionTime/time.Millisecond) >= 6 {
-				t.FailNow()
+			testTime := int64(reporter.executionTime / time.Millisecond)
+			if testTime < 5 || testTime > 6 {
+				t.Fatalf("wrong execution time: %d", testTime)
 			}
 		})
 		g.It("Foo", func() {
@@ -122,8 +122,9 @@ func TestReportingTime(t *testing.T) {
 		})
 	})
 
+	testTime := int64(reporter.executionTime / time.Millisecond)
 	if int64(reporter.totalExecutionTime/time.Millisecond) < 10 {
-		t.FailNow()
+		t.Fatalf("wrong execution time: %d", testTime)
 	}
 }
 

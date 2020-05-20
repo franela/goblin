@@ -342,6 +342,24 @@ func TestFailOnError(t *testing.T) {
 	}
 }
 
+
+func TestFailfOnError(t *testing.T) {
+	fakeTest := testing.T{}
+
+	g := Goblin(&fakeTest)
+
+	g.Describe("Numbers", func() {
+		g.It("Does something", func() {
+			g.Failf("Something goes %s", "wrong")
+		})
+	})
+
+	if !fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}
+
+
 func TestRegex(t *testing.T) {
 	fakeTest := testing.T{}
 	os.Args = append(os.Args, "-goblin.run=matches")
