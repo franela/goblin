@@ -338,43 +338,42 @@ func timeTrack(start time.Time, g *G) {
 	g.reporter.ItTook(time.Since(start))
 }
 
-func (g *G) Fail(error interface{}) {
-	//Skips 7 stacks due to the functions between the stack and the test
-	stack := ResolveStack(7)
-	message := fmt.Sprintf("%v", error)
+func (g *G) errorCommon(msg string, fatal bool) {
 	if g.currentIt == nil {
 		panic("Asserts should be written inside an It() block.")
 	}
-	g.currentIt.failed(message, stack)
+	g.currentIt.failed(msg, ResolveStack(9))
 	if g.shouldContinue != nil {
 		g.shouldContinue <- true
 	}
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
-	if !g.timedOut {
-		//Stop test function execution
-		runtime.Goexit()
+
+	if fatal {
+		g.mutex.Lock()
+		defer g.mutex.Unlock()
+		if !g.timedOut {
+			//Stop test function execution
+			runtime.Goexit()
+		}
 	}
+}
+
+func (g *G) Fail(error interface{}) {
+	message := fmt.Sprintf("%v", error)
+	g.errorCommon(message, true)
 }
 
 func (g *G) Failf(format string, args ...interface{}) {
-	//Skips 7 stacks due to the functions between the stack and the test
-	stack := ResolveStack(7)
 	message := fmt.Sprintf(format, args...)
-	g.currentIt.failed(message, stack)
-	if g.shouldContinue != nil {
-		g.shouldContinue <- true
-	}
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
-	if !g.timedOut {
-		//Stop test function execution
-		runtime.Goexit()
-	}
-
+	g.errorCommon(message, true)
 }
 
-// Alias of Failf
+func (g *G) Fatalf(format string, args ...interface{}) {
+	message := fmt.Sprintf(format, args...)
+	g.errorCommon(message, true)
+}
+
 func (g *G) Errorf(format string, args ...interface{}) {
-	g.Failf(format, args...)
+	message := fmt.Sprintf(format, args...)
+	g.errorCommon(message, false)
+}
 }
