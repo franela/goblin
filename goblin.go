@@ -139,14 +139,8 @@ func (it *It) run(g *G) bool {
 		g.reporter.ItIsPending(it.name)
 		return false
 	}
-	//TODO: should handle errors for beforeEach
-	it.parent.runBeforeEach()
 
-	it.parent.runJustBeforeEach()
-
-	runIt(g, it.h)
-
-	it.parent.runAfterEach()
+	runIt(g, it)
 
 	failed := false
 	if it.failure != nil {
@@ -215,29 +209,39 @@ func Goblin(t *testing.T, arguments ...string) *G {
 	return g
 }
 
-func runIt(g *G, h interface{}) {
-	defer timeTrack(time.Now(), g)
+func runIt(g *G, it *It) {
 	g.mutex.Lock()
 	g.timedOut = false
 	g.mutex.Unlock()
 	g.timer = time.NewTimer(g.timeout)
 	g.shouldContinue = make(chan bool)
-	if call, ok := h.(func()); ok {
+	if call, ok := it.h.(func()); ok {
 		// the test is synchronous
-		go func(c chan bool) { call(); c <- true }(g.shouldContinue)
-	} else if call, ok := h.(func(Done)); ok {
+		go func(c chan bool) {
+			it.parent.runBeforeEach()
+			it.parent.runJustBeforeEach()
+			timeTrack(g, func() { call() })
+			it.parent.runAfterEach()
+			c <- true
+		}(g.shouldContinue)
+	} else if call, ok := it.h.(func(Done)); ok {
 		doneCalled := 0
 		go func(c chan bool) {
-			call(func(msg ...interface{}) {
-				if len(msg) > 0 {
-					g.Fail(msg)
-				} else {
-					doneCalled++
-					if doneCalled > 1 {
-						g.Fail("Done called multiple times")
+			it.parent.runBeforeEach()
+			it.parent.runJustBeforeEach()
+			timeTrack(g, func() {
+				call(func(msg ...interface{}) {
+					if len(msg) > 0 {
+						g.Fail(msg)
+					} else {
+						doneCalled++
+						if doneCalled > 1 {
+							g.Fail("Done called multiple times")
+						}
+						c <- true
 					}
-					c <- true
-				}
+				})
+				it.parent.runAfterEach()
 			})
 		}(g.shouldContinue)
 	} else {
@@ -334,8 +338,12 @@ func (g *G) Assert(src interface{}) *Assertion {
 	return &Assertion{src: src, fail: g.Fail}
 }
 
-func timeTrack(start time.Time, g *G) {
-	g.reporter.ItTook(time.Since(start))
+func timeTrack(g *G, call func()) {
+	t := time.Now()
+	defer func() {
+		g.reporter.ItTook(time.Since(t))
+	}()
+	call()
 }
 
 func (g *G) errorCommon(msg string, fatal bool) {

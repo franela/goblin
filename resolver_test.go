@@ -1,6 +1,8 @@
 package goblin
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestResolver(t *testing.T) {
 	g := Goblin(t)
@@ -13,6 +15,6 @@ func TestResolver(t *testing.T) {
 }
 
 func dummyFunc(g *G) {
-	stack := ResolveStack(3)
-	g.Assert(len(stack)).Equal(5)
+	stack := ResolveStack(5)
+	g.Assert(len(stack)).Equal(6)
 }
