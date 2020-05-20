@@ -376,4 +376,7 @@ func (g *G) Errorf(format string, args ...interface{}) {
 	message := fmt.Sprintf(format, args...)
 	g.errorCommon(message, false)
 }
+
+func (g *G) Helper() {
+	g.t.Helper()
 }
