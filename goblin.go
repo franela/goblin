@@ -238,10 +238,10 @@ func runIt(g *G, it *It) {
 						if doneCalled > 1 {
 							g.Fail("Done called multiple times")
 						}
+						it.parent.runAfterEach()
 						c <- true
 					}
 				})
-				it.parent.runAfterEach()
 			})
 		}(g.shouldContinue)
 	} else {
