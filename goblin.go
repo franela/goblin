@@ -83,12 +83,12 @@ func (d *Describe) runJustBeforeEach() {
 
 func (d *Describe) runAfterEach() {
 
-	if d.parent != nil {
-		d.parent.runAfterEach()
-	}
-
 	for _, a := range d.afterEach {
 		a()
+	}
+
+	if d.parent != nil {
+		d.parent.runAfterEach()
 	}
 }
 
@@ -238,10 +238,10 @@ func runIt(g *G, it *It) {
 						if doneCalled > 1 {
 							g.Fail("Done called multiple times")
 						}
+						it.parent.runAfterEach()
 						c <- true
 					}
 				})
-				it.parent.runAfterEach()
 			})
 		}(g.shouldContinue)
 	} else {

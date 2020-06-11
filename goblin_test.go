@@ -2,6 +2,8 @@ package goblin
 
 import (
 	"os"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -46,6 +48,57 @@ func TestAsync(t *testing.T) {
 
 	if !fakeTest.Failed() {
 		t.Fatal("Failed")
+	}
+}
+
+func TestAsyncSequence(t *testing.T) {
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest)
+	var sequence []string
+
+	g.Describe("Async test", func() {
+
+		g.BeforeEach(func() {
+			sequence = append(sequence, "global_before_each")
+		})
+
+		g.AfterEach(func() {
+			sequence = append(sequence, "global_after_each")
+		})
+
+		g.Describe("nested", func() {
+
+			g.BeforeEach(func() {
+				sequence = append(sequence, "local_before_each")
+			})
+
+			g.AfterEach(func() {
+				sequence = append(sequence, "local_after_each")
+			})
+
+			g.It("Should fail when Fail is called", func(done Done) {
+				go func() {
+					time.Sleep(100 * time.Millisecond)
+					sequence = append(sequence, "test")
+					done()
+				}()
+			})
+		})
+
+	})
+
+	expected := []string{
+		"global_before_each",
+		"local_before_each",
+		"test",
+		"local_after_each",
+		"global_after_each",
+	}
+	if !reflect.DeepEqual(expected, sequence) {
+		t.Fatalf("Failed, expected:\n%s\n\ngot: %s\n",
+			strings.Join(expected, "\n"),
+			strings.Join(sequence, "\n"),
+		)
 	}
 }
 
@@ -342,7 +395,6 @@ func TestFailOnError(t *testing.T) {
 	}
 }
 
-
 func TestFailfOnError(t *testing.T) {
 	fakeTest := testing.T{}
 
@@ -358,7 +410,6 @@ func TestFailfOnError(t *testing.T) {
 		t.Fatal("Failed")
 	}
 }
-
 
 func TestRegex(t *testing.T) {
 	fakeTest := testing.T{}
