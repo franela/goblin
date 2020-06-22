@@ -145,3 +145,43 @@ func TestIsTrueWithMessage(t *testing.T) {
 	verifier.Verify(t)
 	verifier.VerifyMessage(t, "false expected false to be truthy, true is not false")
 }
+
+func TestIsNil(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: nil, fail: verifier.FailFunc}
+	a.IsNil()
+	verifier.Verify(t)
+
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: 102, fail: verifier.FailFunc}
+	a.IsNil()
+	verifier.Verify(t)
+}
+
+func TestIsNilWithMessage(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: 300, fail: verifier.FailFunc}
+	a.IsNil("foobar")
+	verifier.Verify(t)
+	verifier.VerifyMessage(t, "300 expected to be nil, foobar")
+}
+
+func TestIsNotNil(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: 103, fail: verifier.FailFunc}
+	a.IsNotNil()
+	verifier.Verify(t)
+
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: nil, fail: verifier.FailFunc}
+	a.IsNotNil()
+	verifier.Verify(t)
+}
+
+func TestIsNotNilWithMessage(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: nil, fail: verifier.FailFunc}
+	a.IsNotNil("foobar")
+	verifier.Verify(t)
+	verifier.VerifyMessage(t, "expected not to be nil, foobar")
+}

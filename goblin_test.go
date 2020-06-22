@@ -502,3 +502,34 @@ func TestItTimeout(t *testing.T) {
 		t.Fatal("Failed")
 	}
 }
+
+func TestNils(t *testing.T) {
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest)
+
+	g.Describe("Test IsNil and IsNotNil assertions", func() {
+		g.It("IsNil should work fine for nil value", func() {
+			g.Assert(nil).IsNil()
+		})
+		g.It("IsNotNil should work fine for not-nil value", func() {
+			g.Assert(102).IsNotNil()
+		})
+	})
+
+	if fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+
+	g.Describe("Test IsNil and IsNotNil assertions with wrong values", func() {
+		g.It("IsNil should fail for not-nil value", func() {
+			g.Assert(102).IsNil()
+		})
+		g.It("IsNotNil should fail for nil value", func() {
+			g.Assert(nil).IsNotNil()
+		})
+	})
+
+	if !fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}

@@ -90,3 +90,17 @@ func (a *Assertion) IsFalse(messages ...interface{}) {
 			formatMessages(messages...)))
 	}
 }
+
+func (a *Assertion) IsNil(messages ...string) {
+	if !objectsAreEqual(a.src, nil) {
+		message := fmt.Sprintf("%v %s%s", a.src, "expected to be nil", formatMessages(messages...))
+		a.fail(message)
+	}
+}
+
+func (a *Assertion) IsNotNil(messages ...string) {
+	if objectsAreEqual(a.src, nil) {
+		message := fmt.Sprintf("%s%s", "expected not to be nil", formatMessages(messages...))
+		a.fail(message)
+	}
+}
