@@ -145,3 +145,143 @@ func TestIsTrueWithMessage(t *testing.T) {
 	verifier.Verify(t)
 	verifier.VerifyMessage(t, "false expected false to be truthy, true is not false")
 }
+
+func TestIsNil(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: nil, fail: verifier.FailFunc}
+	a.IsNil()
+	verifier.Verify(t)
+
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: struct{}{}, fail: verifier.FailFunc}
+	a.IsNil()
+	verifier.Verify(t)
+}
+
+func TestIsNilWithMessage(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: struct{}{}, fail: verifier.FailFunc}
+	a.IsNil("value is not nil")
+	verifier.Verify(t)
+	verifier.VerifyMessage(t, "{} expected to be nil, value is not nil")
+}
+
+func TestIsNotNil(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: 1, fail: verifier.FailFunc}
+	a.IsNotNil()
+	verifier.Verify(t)
+
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: nil, fail: verifier.FailFunc}
+	a.IsNotNil()
+	verifier.Verify(t)
+}
+
+func TestIsNotNilWithMessage(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: nil, fail: verifier.FailFunc}
+	a.IsNotNil("value should not be nil")
+	verifier.Verify(t)
+	verifier.VerifyMessage(t, "<nil> is nil, value should not be nil")
+}
+
+func TestIsZeroForStructs(t *testing.T) {
+	source := struct{ Name string }{}
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: source, fail: verifier.FailFunc}
+	a.IsZero()
+	verifier.Verify(t)
+
+	source = struct{ Name string }{Name: "Person"}
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: source, fail: verifier.FailFunc}
+	a.IsZero()
+	verifier.Verify(t)
+}
+
+func TestIsZeroForInt(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: 0, fail: verifier.FailFunc}
+	a.IsZero()
+	verifier.Verify(t)
+
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: 1, fail: verifier.FailFunc}
+	a.IsZero()
+	verifier.Verify(t)
+}
+
+func TestIsZeroForFloat(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: 0.0, fail: verifier.FailFunc}
+	a.IsZero()
+	verifier.Verify(t)
+
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: 5.1, fail: verifier.FailFunc}
+	a.IsZero()
+	verifier.Verify(t)
+}
+
+func TestIsZeroWithMessage(t *testing.T) {
+	source := struct {
+		Name string
+	}{
+		Name: "Person",
+	}
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: source, fail: verifier.FailFunc}
+	a.IsZero("should be zero")
+	verifier.Verify(t)
+	message := "struct { Name string }{Name:\"Person\"} is not a zero value, should be zero"
+	verifier.VerifyMessage(t, message)
+}
+
+func TestIsNotZeroForStructs(t *testing.T) {
+	source := struct{ Name string }{Name: "Person"}
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: source, fail: verifier.FailFunc}
+	a.IsNotZero()
+	verifier.Verify(t)
+
+	source = struct{ Name string }{}
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: source, fail: verifier.FailFunc}
+	a.IsNotZero()
+	verifier.Verify(t)
+}
+
+func TestIsNotZeroForInt(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: 1, fail: verifier.FailFunc}
+	a.IsNotZero()
+	verifier.Verify(t)
+
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: 0, fail: verifier.FailFunc}
+	a.IsNotZero()
+	verifier.Verify(t)
+}
+
+func TestIsNotZeroForFloat(t *testing.T) {
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: 0.1, fail: verifier.FailFunc}
+	a.IsNotZero()
+	verifier.Verify(t)
+
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: 0.0, fail: verifier.FailFunc}
+	a.IsNotZero()
+	verifier.Verify(t)
+}
+
+func TestIsNotZeroWithMessage(t *testing.T) {
+	source := struct{ Name string }{}
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: source, fail: verifier.FailFunc}
+	a.IsNotZero("should not be zero")
+	verifier.Verify(t)
+	message := "struct { Name string }{Name:\"\"} is a zero value, should not be zero"
+	verifier.VerifyMessage(t, message)
+}

@@ -502,3 +502,129 @@ func TestItTimeout(t *testing.T) {
 		t.Fatal("Failed")
 	}
 }
+
+func TestIsNilAndIsNotNil(t *testing.T) {
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest)
+
+	g.Describe("Test for IsNil", func() {
+		g.It("Should assert successfully with nil value", func() {
+			g.Assert(nil).IsNil()
+		})
+	})
+
+	g.Describe("Test for IsNotNil", func() {
+		g.It("Should assert successfully with not nil value", func() {
+			g.Assert(struct{}{}).IsNotNil()
+		})
+	})
+
+	if fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+
+	g.Describe("Test for IsNil with failed assertion", func() {
+		g.It("Should fail", func() {
+			g.Assert(100).IsNil()
+		})
+	})
+
+	g.Describe("Test for IsNotNil with failed assertion", func() {
+		g.It("Should fail", func() {
+			g.Assert(nil).IsNotNil()
+		})
+	})
+
+	if !fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}
+
+func TestIsZeroAndIsNotZero(t *testing.T) {
+	fakeTest := testing.T{}
+	g := Goblin(&fakeTest)
+
+	g.Describe("Test for IsZero", func() {
+		g.It("Should assert successfully with int zero value", func() {
+			g.Assert(0).IsZero()
+		})
+
+		g.It("Should assert successfully with float zero value", func() {
+			g.Assert(0.0).IsZero()
+		})
+
+		g.It("Should assert successfully with string zero value", func() {
+			g.Assert("").IsZero()
+		})
+
+		g.It("Should assert successfully with struct zero value", func() {
+			g.Assert(struct{}{}).IsZero()
+		})
+
+		g.It("Should assert successfully with struct field with zero value", func() {
+			g.Assert(struct{ value int }{value: 0}).IsZero()
+		})
+	})
+
+	g.Describe("Test for IsNotZero", func() {
+		g.It("Should assert successfully with int not zero value", func() {
+			g.Assert(1).IsNotZero()
+		})
+
+		g.It("Should assert successfully with float  not zero value", func() {
+			g.Assert(0.5).IsNotZero()
+		})
+
+		g.It("Should assert successfully with string not zero value", func() {
+			g.Assert("ABC").IsNotZero()
+		})
+
+		g.It("Should assert successfully with struct not zero value", func() {
+			g.Assert(struct{ value int }{value: 1}).IsNotZero()
+		})
+	})
+
+	if fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+
+	g.Describe("Test for IsZero with failed assertion", func() {
+		g.It("Should fail", func() {
+			g.Assert(100).IsZero()
+		})
+
+		g.It("Should fail", func() {
+			g.Assert(1.0).IsZero()
+		})
+
+		g.It("Should fail", func() {
+			g.Assert("A").IsZero()
+		})
+
+		g.It("Should fail", func() {
+			g.Assert(struct{ value int }{value: 1}).IsZero()
+		})
+	})
+
+	g.Describe("Test for IsNotZero with failed assertion", func() {
+		g.It("Should fail", func() {
+			g.Assert(0).IsNotZero()
+		})
+
+		g.It("Should fail", func() {
+			g.Assert(0.0).IsNotZero()
+		})
+
+		g.It("Should fail", func() {
+			g.Assert("").IsNotZero()
+		})
+
+		g.It("Should fail", func() {
+			g.Assert(struct{}{}).IsNotZero()
+		})
+	})
+
+	if !fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}
