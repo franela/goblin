@@ -90,3 +90,47 @@ func (a *Assertion) IsFalse(messages ...interface{}) {
 			formatMessages(messages...)))
 	}
 }
+
+// IsNil asserts that source is nil.
+func (a *Assertion) IsNil(messages ...interface{}) {
+	if !objectsAreEqual(a.src, nil) {
+		message := fmt.Sprintf("%v %s%v", a.src, "expected to be nil", formatMessages(messages...))
+
+		a.fail(message)
+	}
+}
+
+// IsNotNil asserts that source is not nil.
+func (a *Assertion) IsNotNil(messages ...interface{}) {
+	if objectsAreEqual(a.src, nil) {
+		message := fmt.Sprintf("%v %s%v", a.src, "is nil", formatMessages(messages...))
+
+		a.fail(message)
+	}
+}
+
+// IsZero asserts that source is a zero value for its respective type.
+// If it is a structure, for example, all of its fields must have their
+// respective zero value: "" for strings, 0 for int, etc. Slices, arrays
+// and maps are only considered zero if they are nil. To check if these
+// type of values are empty or not, use the len() from the data source
+// with IsZero(). Example: g.Assert(len(list)).IsZero().
+func (a *Assertion) IsZero(messages ...interface{}) {
+	valueOf := reflect.ValueOf(a.src)
+
+	if !valueOf.IsZero() {
+		message := fmt.Sprintf("%#v %s%v", a.src, "is not a zero value", formatMessages(messages...))
+
+		a.fail(message)
+	}
+}
+
+// IsNotZero asserts the contrary of IsZero.
+func (a *Assertion) IsNotZero(messages ...interface{}) {
+	valueOf := reflect.ValueOf(a.src)
+
+	if valueOf.IsZero() {
+		message := fmt.Sprintf("%#v %s%v", a.src, "is a zero value", formatMessages(messages...))
+		a.fail(message)
+	}
+}
