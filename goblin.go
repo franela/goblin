@@ -370,6 +370,10 @@ func (g *G) Fail(error interface{}) {
 	g.errorCommon(message, true)
 }
 
+func (g *G) FailNow() {
+	g.t.FailNow()
+}
+
 func (g *G) Failf(format string, args ...interface{}) {
 	message := fmt.Sprintf(format, args...)
 	g.errorCommon(message, true)
