@@ -124,12 +124,13 @@ type Failure struct {
 }
 
 type It struct {
-	h        interface{}
-	name     string
-	parent   *Describe
-	failure  *Failure
-	reporter Reporter
-	isAsync  bool
+	h         interface{}
+	name      string
+	parent    *Describe
+	failure   *Failure
+	failureMu sync.RWMutex
+	reporter  Reporter
+	isAsync   bool
 }
 
 func (it *It) run(g *G) bool {
@@ -143,9 +144,11 @@ func (it *It) run(g *G) bool {
 	runIt(g, it)
 
 	failed := false
+	it.failureMu.RLock()
 	if it.failure != nil {
 		failed = true
 	}
+	it.failureMu.RUnlock()
 
 	if failed {
 		g.reporter.ItFailed(it.name)
@@ -157,6 +160,8 @@ func (it *It) run(g *G) bool {
 }
 
 func (it *It) failed(msg string, stack []string) {
+	it.failureMu.Lock()
+	defer it.failureMu.Unlock()
 	it.failure = &Failure{Stack: stack, Message: msg, TestName: it.parent.name + " " + it.name}
 }
 
