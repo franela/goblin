@@ -161,7 +161,7 @@ func TestNestedAfterEach(t *testing.T) {
 				g.Assert(after).Equal(0)
 			})
 
-			g.It("Should have called all the registered aftearEach", func() {
+			g.It("Should have called all the registered afterEach", func() {
 				g.Assert(after).Equal(2)
 			})
 		})

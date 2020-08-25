@@ -2,6 +2,7 @@ package goblin
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -16,6 +17,7 @@ type FakeReporter struct {
 	failures           int
 	executionTime      time.Duration
 	totalExecutionTime time.Duration
+	executionTimeMu    sync.RWMutex
 	beginFlag, endFlag bool
 }
 
@@ -48,6 +50,8 @@ func (r *FakeReporter) ItIsExcluded(name string) {
 }
 
 func (r *FakeReporter) ItTook(duration time.Duration) {
+	r.executionTimeMu.Lock()
+	defer r.executionTimeMu.Unlock()
 	r.executionTime = duration
 	r.totalExecutionTime += duration
 }
@@ -123,6 +127,8 @@ func TestReportingTime(t *testing.T) {
 	})
 
 	testTime := int64(reporter.executionTime / time.Millisecond)
+	reporter.executionTimeMu.RLock()
+	defer reporter.executionTimeMu.RUnlock()
 	if int64(reporter.totalExecutionTime/time.Millisecond) < 10 {
 		t.Fatalf("wrong execution time: %d", testTime)
 	}
