@@ -27,4 +27,4 @@ jobs:
         go get -v -t -d ./...
 
     - name: Tests
-      run: go test -v .
+      run: go test -race -v .
