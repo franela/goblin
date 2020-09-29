@@ -94,19 +94,29 @@ func (a *Assertion) IsFalse(messages ...interface{}) {
 // IsNil asserts that source is nil.
 func (a *Assertion) IsNil(messages ...interface{}) {
 	if !objectsAreEqual(a.src, nil) {
+		if reflect.TypeOf(a.src).Kind() == reflect.Slice {
+			if reflect.ValueOf(a.src).IsNil() {
+				return
+			}
+		}
 		message := fmt.Sprintf("%v %s%v", a.src, "expected to be nil", formatMessages(messages...))
-
 		a.fail(message)
 	}
 }
 
 // IsNotNil asserts that source is not nil.
 func (a *Assertion) IsNotNil(messages ...interface{}) {
-	if objectsAreEqual(a.src, nil) {
-		message := fmt.Sprintf("%v %s%v", a.src, "is nil", formatMessages(messages...))
-
-		a.fail(message)
+	if !objectsAreEqual(a.src, nil) {
+		if reflect.TypeOf(a.src).Kind() == reflect.Slice {
+			if !reflect.ValueOf(a.src).IsNil() {
+				return
+			}
+		} else {
+			return
+		}
 	}
+	message := fmt.Sprintf("%v %s%v", a.src, "is nil", formatMessages(messages...))
+	a.fail(message)
 }
 
 // IsZero asserts that source is a zero value for its respective type.
