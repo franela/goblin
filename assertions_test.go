@@ -158,6 +158,20 @@ func TestIsNil(t *testing.T) {
 	verifier.Verify(t)
 }
 
+func TestIsNilWithSlice(t *testing.T) {
+	var slice = make([]interface{}, 0)
+	verifier := AssertionVerifier{ShouldPass: false}
+	a := Assertion{src: slice, fail: verifier.FailFunc}
+	a.IsNil()
+	verifier.Verify(t)
+
+	slice = nil
+	verifier = AssertionVerifier{ShouldPass: true}
+	a = Assertion{src: slice, fail: verifier.FailFunc}
+	a.IsNil()
+	verifier.Verify(t)
+}
+
 func TestIsNilWithMessage(t *testing.T) {
 	verifier := AssertionVerifier{ShouldPass: false}
 	a := Assertion{src: struct{}{}, fail: verifier.FailFunc}
@@ -174,6 +188,20 @@ func TestIsNotNil(t *testing.T) {
 
 	verifier = AssertionVerifier{ShouldPass: false}
 	a = Assertion{src: nil, fail: verifier.FailFunc}
+	a.IsNotNil()
+	verifier.Verify(t)
+}
+
+func TestIsNotNilWithSlice(t *testing.T) {
+	var slice = make([]interface{}, 0)
+	verifier := AssertionVerifier{ShouldPass: true}
+	a := Assertion{src: slice, fail: verifier.FailFunc}
+	a.IsNotNil()
+	verifier.Verify(t)
+
+	slice = nil
+	verifier = AssertionVerifier{ShouldPass: false}
+	a = Assertion{src: slice, fail: verifier.FailFunc}
 	a.IsNotNil()
 	verifier.Verify(t)
 }
