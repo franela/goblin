@@ -22,7 +22,7 @@ type Itable interface {
 }
 
 func (g *G) Describe(name string, h func()) {
-	d := &Describe{name: name, h: h, parent: g.parent}
+	d := &Describe{name: name, h: h, parent: g.parent, timeout: g.timeout}
 
 	if d.parent != nil {
 		d.parent.children = append(d.parent.children, Runnable(d))
@@ -44,8 +44,14 @@ func (g *G) Describe(name string, h func()) {
 }
 
 func (g *G) Timeout(time time.Duration) {
-	g.timeout = time
-	g.timer.Reset(time)
+	if g.currentIt != nil {
+		g.timeout = time
+		g.timer.Reset(time)
+	} else if g.parent != nil {
+		g.parent.timeout = time
+	} else {
+		g.timeout = time
+	}
 }
 
 type Describe struct {
@@ -58,6 +64,7 @@ type Describe struct {
 	beforeEach     []func()
 	justBeforeEach []func()
 	hasTests       bool
+	timeout        time.Duration
 	parent         *Describe
 }
 
@@ -218,7 +225,7 @@ func runIt(g *G, it *It) {
 	g.mutex.Lock()
 	g.timedOut = false
 	g.mutex.Unlock()
-	g.timer = time.NewTimer(g.timeout)
+	g.timer = time.NewTimer(it.parent.timeout)
 	g.shouldContinue = make(chan bool)
 	if call, ok := it.h.(func()); ok {
 		// the test is synchronous
