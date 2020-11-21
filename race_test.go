@@ -42,3 +42,9 @@ func TestG_It_Assert_Race(t *testing.T) {
 		})
 	})
 }
+
+func TestG_Concurrency_Race(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		go Goblin(nil)
+	}
+}
