@@ -185,9 +185,11 @@ func (xit *Xit) failed(msg string, stack []string) {
 	xit.failure = nil
 }
 
+var once sync.Once
+
 func parseFlags() {
 	//Flag parsing
-	flag.Parse()
+	once.Do(flag.Parse)
 	if *regexParam != "" {
 		runRegex = regexp.MustCompile(*regexParam)
 	} else {
