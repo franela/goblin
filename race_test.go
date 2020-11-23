@@ -45,6 +45,12 @@ func TestG_It_Assert_Race(t *testing.T) {
 
 func TestG_Concurrency_Race(t *testing.T) {
 	for i := 0; i < 1000; i++ {
-		go Goblin(nil)
+		gob := Goblin(t)
+		go func(g *G) {
+			g.Describe("Should not create a data race", func() {
+				g.It("Should pass", func() {
+				})
+			})
+		}(gob)
 	}
 }

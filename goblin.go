@@ -28,7 +28,9 @@ func (g *G) Describe(name string, h func()) {
 		d.parent.children = append(d.parent.children, Runnable(d))
 	}
 
+	g.mutex.Lock()
 	g.parent = d
+	g.mutex.Unlock()
 
 	h()
 
@@ -201,9 +203,13 @@ var timeout = flag.Duration("goblin.timeout", 5*time.Second, "Sets default timeo
 var isTty = flag.Bool("goblin.tty", true, "Sets the default output format (color / monochrome)")
 var regexParam = flag.String("goblin.run", "", "Runs only tests which match the supplied regex")
 var runRegex *regexp.Regexp
+var mx sync.Mutex
 
 func Goblin(t *testing.T, arguments ...string) *G {
+	mx.Lock()
 	parseFlags()
+	mx.Unlock()
+
 	g := &G{t: t, timeout: *timeout}
 	var fancy TextFancier
 	if *isTty {
@@ -308,6 +314,8 @@ func (g *G) Xit(name string, h ...interface{}) {
 }
 
 func matchesRegex(value string) bool {
+	mx.Lock()
+	defer mx.Unlock()
 	if runRegex != nil {
 		return runRegex.MatchString(value)
 	}
