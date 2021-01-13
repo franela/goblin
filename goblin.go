@@ -186,15 +186,18 @@ func (xit *Xit) failed(msg string, stack []string) {
 }
 
 func parseFlags() {
-	//Flag parsing
-	flag.Parse()
-	if *regexParam != "" {
-		runRegex = regexp.MustCompile(*regexParam)
-	} else {
-		runRegex = nil
-	}
+	doParseOnce.Do(func() {
+		//Flag parsing
+		flag.Parse()
+		if *regexParam != "" {
+			runRegex = regexp.MustCompile(*regexParam)
+		} else {
+			runRegex = nil
+		}
+	})
 }
 
+var doParseOnce sync.Once
 var timeout = flag.Duration("goblin.timeout", 5*time.Second, "Sets default timeouts for all tests")
 var isTty = flag.Bool("goblin.tty", true, "Sets the default output format (color / monochrome)")
 var regexParam = flag.String("goblin.run", "", "Runs only tests which match the supplied regex")
