@@ -1,6 +1,7 @@
 package goblin
 
 import (
+	"sync"
 	"testing"
 	"time"
 )
@@ -41,4 +42,19 @@ func TestG_It_Assert_Race(t *testing.T) {
 		g.It("Should pass", func() {
 		})
 	})
+}
+
+func TestG_Parallel_New_Goblin(t *testing.T) {
+	wg := new(sync.WaitGroup)
+	const cnt = 2
+
+	wg.Add(cnt)
+	for i := 0; i < cnt; i++ {
+		go func() {
+			Goblin(new(testing.T))
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
 }

@@ -186,15 +186,13 @@ func (xit *Xit) failed(msg string, stack []string) {
 }
 
 func parseFlags() {
-	doParseOnce.Do(func() {
-		//Flag parsing
-		flag.Parse()
-		if *regexParam != "" {
-			runRegex = regexp.MustCompile(*regexParam)
-		} else {
-			runRegex = nil
-		}
-	})
+	//Flag parsing
+	flag.Parse()
+	if *regexParam != "" {
+		runRegex = regexp.MustCompile(*regexParam)
+	} else {
+		runRegex = nil
+	}
 }
 
 var doParseOnce sync.Once
@@ -204,7 +202,10 @@ var regexParam = flag.String("goblin.run", "", "Runs only tests which match the 
 var runRegex *regexp.Regexp
 
 func Goblin(t *testing.T, arguments ...string) *G {
-	parseFlags()
+	doParseOnce.Do(func() {
+		parseFlags()
+	})
+
 	g := &G{t: t, timeout: *timeout}
 	var fancy TextFancier
 	if *isTty {

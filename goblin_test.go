@@ -4,7 +4,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 )
@@ -628,33 +627,4 @@ func TestIsZeroAndIsNotZero(t *testing.T) {
 	if !fakeTest.Failed() {
 		t.Fatal("Failed")
 	}
-}
-
-func TestParseFlags(t *testing.T) {
-	wg := new(sync.WaitGroup)
-	const cnt = 2
-
-	wg.Add(cnt)
-	for i := 0; i < cnt; i++ {
-		go func() {
-			parseFlags()
-			wg.Done()
-		}()
-	}
-
-	wg.Wait()
-}
-
-func TestGoblinConcurrence(t *testing.T) {
-	wg := new(sync.WaitGroup)
-	const cnt = 2
-
-	wg.Add(cnt)
-	for i := 0; i < cnt; i++ {
-		go func() {
-			Goblin(t)
-			wg.Done()
-		}()
-	}
-	wg.Wait()
 }
