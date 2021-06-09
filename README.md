@@ -29,6 +29,7 @@ What do I get with it?
 - Preserve the exact same syntax and behaviour as Node's Mocha
 - Nest as many `Describe` and `It` blocks as you want
 - Use `Before`, `BeforeEach`, `After` and `AfterEach` for setup and teardown your tests
+- Use `Skip`, `SkipIf`, and `Resume` to selectively skip tests
 - No need to remember confusing parameters in `Describe` and `It` blocks
 - Use a declarative and expressive language to write your tests
 - Plug different assertion libraries
@@ -124,6 +125,62 @@ func Test(t *testing.T) {
     g.Describe("lala", func() {
         g.It("lslslslsls", func() {
             Expect(1).To(Equal(10))
+        })
+    })
+}
+```
+
+How do I skip tests?
+--------------------
+
+Goblin provides several different methods of marking tests to be skipped.
+
+- `g.Xit("test name", ...)` - excludes a single test from running
+- `g.Skip("test name", ...)` - alias for `Xit`
+- `g.Skip()` - when called without arguments, skips all following tests until
+  Resume is called, or end of the Describe block is reached
+- `g.Resume()` - stops skipping remaining tests
+- `g.SkipIf(...)` - skips all following tests if all passed args can be coerced
+  to `true` (ish), also can take `func () bool` as an argument
+
+```go
+package foobar
+
+import (
+    "testing"
+    . "github.com/franela/goblin"
+)
+
+func Test(t *testing.T) {
+    g := Goblin(t)
+    g.Describe("Numbers", func() {
+        // SkipIf allows you to dynamically disable test suites, for example
+        // integration tests, or those which require supporting services
+        g.SkipIf(func () {
+            return os.Getenv("SKIP_NUMBERS") != ""
+        })
+
+        // This will skip a single test
+        g.Xit("Should add two numbers ", func() {
+            g.Assert(1+1).Equal(2)
+        })
+        // This is an alias for Xit
+        g.Skip("Should match equal numbers", func() {
+            g.Assert(2).Equal(4)
+        })
+        // This will cause all the rest of the tests in the Describe block to be
+        // skipped until a Resume() call is made
+        g.Skip()
+        // This is skipped
+        g.It("Should substract two numbers", func (){
+            g.Assert(4-2).Equal(2)
+        })
+
+        // This will stop skipping of any tests and blocks
+        g.Resume()
+        // This will be run
+        g.It("Should add two numbers ", func() {
+            g.Assert(3+1).Equal(4)
         })
     })
 }

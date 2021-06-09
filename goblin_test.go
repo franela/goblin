@@ -179,7 +179,7 @@ func TestMultipleDescribes(t *testing.T) {
 		g.Describe("Subtraction", func() {
 			g.It("Should subtract numbers", func() {
 				count++
-				sub := 5 - 5
+				sub := 5 - 6
 				g.Assert(sub).Equal(1)
 			})
 		})
@@ -227,7 +227,7 @@ func TestExcluded(t *testing.T) {
 		g.Describe("Subtraction", func() {
 			g.Xit("Should subtract numbers", func() {
 				count++
-				sub := 5 - 5
+				sub := 5 - 6
 				g.Assert(sub).Equal(1)
 			})
 		})
@@ -626,5 +626,76 @@ func TestIsZeroAndIsNotZero(t *testing.T) {
 
 	if !fakeTest.Failed() {
 		t.Fatal("Failed")
+	}
+}
+
+func TestSkip(t *testing.T) {
+	fakeTest := testing.T{}
+
+	g := Goblin(&fakeTest)
+
+	count := 0
+	g.Describe("Numbers", func() {
+
+		g.Describe("Addition", func() {
+			g.Skip("Should add numbers", func() {
+				count |= 2
+				sum := 1 + 1
+				g.Assert(sum).Equal(2)
+			})
+		})
+
+		g.Describe("Subtraction", func() {
+			// This will skip all the following tests within this Describe block
+			g.Skip()
+			g.It("Should subtract numbers", func() {
+				count |= 4
+				sub := 5 - 6
+				g.Assert(sub).Equal(1)
+			})
+		})
+
+		g.Describe("Other", func() {
+			g.It("Should not skip this since we're in a new block", func() {
+				count |= 8
+				check := !true
+				g.Assert(check).Equal(false)
+			})
+		})
+
+		// This should skip the following
+		g.Skip()
+		g.Describe("Nested skipping", func() {
+			g.Describe("Should pass skipping down the chain", func() {
+				g.It("Should skip tests that are nested", func() {
+					count |= 16
+					check := !false
+					g.Assert(check).Equal(false)
+				})
+			})
+		})
+
+		g.Resume()
+		// This should allow the next test to run
+		g.It("Should run this since we resumed", func() {
+			count |= 32
+			g.Assert(count).IsNotZero()
+		})
+
+		// This should force the next test to skip
+		g.SkipIf(func() bool {
+			return true
+		})
+		g.It("Should skip this because our func returns true", func() {
+			count |= 64
+			g.Assert(count).IsZero()
+		})
+	})
+
+	if fakeTest.Failed() {
+		t.Fatal("Failed: suite failed")
+	}
+	if count != 8|32 {
+		t.Fatal("Failed: incorrect count")
 	}
 }

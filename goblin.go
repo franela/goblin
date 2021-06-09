@@ -3,6 +3,7 @@ package goblin
 import (
 	"flag"
 	"fmt"
+	"reflect"
 	"regexp"
 	"runtime"
 	"sync"
@@ -26,6 +27,8 @@ func (g *G) Describe(name string, h func()) {
 
 	if d.parent != nil {
 		d.parent.children = append(d.parent.children, Runnable(d))
+		// Pass down skip status
+		d.skipping = d.parent.skipping
 	}
 
 	g.parent = d
@@ -59,6 +62,7 @@ type Describe struct {
 	justBeforeEach []func()
 	hasTests       bool
 	parent         *Describe
+	skipping       bool
 }
 
 func (d *Describe) runBeforeEach() {
@@ -286,10 +290,18 @@ func (g *G) SetReporter(r Reporter) {
 
 func (g *G) It(name string, h ...interface{}) {
 	if matchesRegex(name) {
-		it := &It{name: name, parent: g.parent, reporter: g.reporter}
 		if g.parent == nil {
 			panic(fmt.Sprintf("It(\"%s\") block should be written inside Describe() block.", name))
 		}
+
+		// Skip this test if our suite is "skipping" all
+		if g.parent.skipping {
+			g.Xit(name, h...)
+			return
+		}
+
+		it := &It{name: name, parent: g.parent, reporter: g.reporter}
+
 		notifyParents(g.parent)
 		if len(h) > 0 {
 			it.h = h[0]
@@ -400,4 +412,91 @@ func (g *G) Errorf(format string, args ...interface{}) {
 
 func (g *G) Helper() {
 	g.t.Helper()
+}
+
+func (g *G) Skip(args ...interface{}) {
+	if g.parent == nil {
+		panic(fmt.Sprintf("Skip(%+v) call should be written inside Describe() block.", args))
+	}
+	// Check if we're calling this empty, which indicates we're skipping a suite
+	if len(args) < 1 {
+		g.parent.skipping = true
+		return
+	}
+	// Otherwise just use it as an alias for Xit
+	name := fmt.Sprintf("%v", args[0])
+	args = args[1:]
+	g.Xit(name, args...)
+}
+
+func (g *G) Resume() {
+	if g.parent == nil {
+		panic("Resume() call should be written inside Describe() block.")
+	}
+
+	g.parent.skipping = false
+}
+
+func (g *G) SkipIf(args ...interface{}) {
+	if g.parent == nil {
+		panic(fmt.Sprintf("SkipIf(%+v) call should be written inside Describe() block.", args))
+	}
+	skip := true
+	for _, arg := range args {
+		skip = skip && toBool(arg)
+	}
+	if skip {
+		g.parent.skipping = true
+	}
+}
+
+func toBool(i interface{}) bool {
+	i = indirect(i)
+	switch s := i.(type) {
+	case int:
+	case int64:
+	case int32:
+	case int16:
+	case int8:
+	case uint:
+	case uint64:
+	case uint32:
+	case uint16:
+	case uint8:
+	case float64:
+	case float32:
+		return s != 0
+	case string:
+		return s != ""
+	case []byte:
+		return string(s) != ""
+	case fmt.Stringer:
+		return s.String() != ""
+	case bool:
+		return s
+	case func() bool:
+		return s()
+	default:
+		return false
+	}
+	return false
+}
+
+// indirect returns the value, after dereferencing as many times as necessary to
+// reach the base type (or nil).
+// From html/template/content.go
+// Copyright 2011 The Go Authors. All rights reserved.
+func indirect(a interface{}) interface{} {
+	if a == nil {
+		return nil
+	}
+	if t := reflect.TypeOf(a); t.Kind() != reflect.Ptr {
+		// Avoid creating a reflect.Value if it's not a pointer.
+		return a
+	}
+	v := reflect.ValueOf(a)
+	for v.Kind() == reflect.Ptr && !v.IsNil() {
+		v = v.Elem()
+	}
+	return v.Interface()
 }
