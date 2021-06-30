@@ -143,6 +143,10 @@ Goblin provides several different methods of marking tests to be skipped.
 - `g.SkipIf(...)` - skips all following tests if all passed args can be coerced
   to `true` (ish), also can take `func () bool` as an argument
 
+If all the tests within a suite are skipped, the `Before`, `After`, etc., hooks
+will not be run, which is convenient for suites that conditionally skip based on
+availability of external services.
+
 ```go
 package foobar
 

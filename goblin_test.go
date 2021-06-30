@@ -692,10 +692,106 @@ func TestSkip(t *testing.T) {
 		})
 	})
 
+	// Tracking which hooks have run
+	skip := make([]string, 0)
+
+	g.Describe("Skips test hooks when the suite is skipped", func() {
+		g.SkipIf(func() bool {
+			return true
+		})
+		g.Before(func() {
+			skip = append(skip, "Before")
+		})
+		g.After(func() {
+			skip = append(skip, "After")
+		})
+		g.BeforeEach(func() {
+			skip = append(skip, "BeforeEach")
+		})
+		g.AfterEach(func() {
+			skip = append(skip, "AfterEach")
+		})
+		g.It("should skip this", func() {
+			skip = append(skip, "It")
+		})
+	})
+
+	skipIt := make([]string, 0)
+
+	g.Describe("Skips test hooks when all the tests are skipped", func() {
+		g.Before(func() {
+			skipIt = append(skip, "Before")
+		})
+		g.After(func() {
+			skipIt = append(skip, "After")
+		})
+		g.BeforeEach(func() {
+			skipIt = append(skip, "BeforeEach")
+		})
+		g.AfterEach(func() {
+			skipIt = append(skip, "AfterEach")
+		})
+		g.Skip("should skip this", func() {
+			skipIt = append(skip, "It")
+		})
+		g.Skip("should skip this also", func() {
+			skipIt = append(skip, "It2")
+		})
+		g.Skip()
+		g.It("should skip this too", func() {
+			skipIt = append(skip, "It3")
+		})
+	})
+
+	ran := make([]string, 0)
+	ranResume := false
+
+	g.Describe("Doesn't skip test hooks when there are tests that aren't skipped", func() {
+		g.Skip()
+		g.Before(func() {
+			ran = append(ran, "Before")
+		})
+		g.After(func() {
+			ran = append(ran, "After")
+		})
+		g.BeforeEach(func() {
+			ran = append(ran, "BeforeEach")
+		})
+		g.AfterEach(func() {
+			ran = append(ran, "AfterEach")
+		})
+		g.It("should skip this", func() {
+			ran = append(ran, "It")
+		})
+		g.Resume()
+		g.It("shouldn't skip this, and run the hooks", func() {
+			ranResume = true
+		})
+		g.Skip("should skip this", func() {
+			ran = append(ran, "Skip")
+		})
+	})
+
 	if fakeTest.Failed() {
 		t.Fatal("Failed: suite failed")
 	}
 	if count != 8|32 {
 		t.Fatal("Failed: incorrect count")
+	}
+
+	if len(skip) > 0 {
+		t.Fatalf("Failed: ran hooks: %v", skip)
+	}
+
+	if len(skipIt) > 0 {
+		t.Fatalf("Failed: ran hooks: %v", skipIt)
+	}
+
+	if !ranResume {
+		t.Fatal("Failed: did not run resumed test")
+	}
+
+	if len(ran) != 4 {
+		t.Fatalf("Failed: ran incomplete hooks: %v", ran)
 	}
 }

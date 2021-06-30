@@ -1,3 +1,4 @@
+// Package goblin provides the Goblin test runner
 package goblin
 
 import (
@@ -60,14 +61,20 @@ type Describe struct {
 	afterEach      []func()
 	beforeEach     []func()
 	justBeforeEach []func()
-	hasTests       bool
+	hasTests       bool // Flag indicating there are declared tests
 	parent         *Describe
-	skipping       bool
+	skipping       bool // Flag indicating the block is in a Skipped state (may be reset mid-block)
+	hasUnskipped   bool // Flag indicating there are tests to run (not skipped)
 }
 
 func (d *Describe) runBeforeEach() {
 	if d.parent != nil {
 		d.parent.runBeforeEach()
+	}
+
+	// Don't run hooks if there's no tests to actually run
+	if !d.hasUnskipped {
+		return
 	}
 
 	for _, b := range d.beforeEach {
@@ -80,12 +87,21 @@ func (d *Describe) runJustBeforeEach() {
 		d.parent.runJustBeforeEach()
 	}
 
+	// Don't run hooks if there's no tests to actually run
+	if !d.hasUnskipped {
+		return
+	}
+
 	for _, b := range d.justBeforeEach {
 		b()
 	}
 }
 
 func (d *Describe) runAfterEach() {
+	// Don't run hooks if there's no tests to actually run
+	if !d.hasUnskipped {
+		return
+	}
 
 	for _, a := range d.afterEach {
 		a()
@@ -101,8 +117,10 @@ func (d *Describe) run(g *G) bool {
 	if d.hasTests {
 		g.reporter.BeginDescribe(d.name)
 
-		for _, b := range d.befores {
-			b()
+		if d.hasUnskipped {
+			for _, b := range d.befores {
+				b()
+			}
 		}
 
 		for _, r := range d.children {
@@ -111,8 +129,10 @@ func (d *Describe) run(g *G) bool {
 			}
 		}
 
-		for _, a := range d.afters {
-			a()
+		if d.hasUnskipped {
+			for _, a := range d.afters {
+				a()
+			}
 		}
 
 		g.reporter.EndDescribe()
@@ -134,7 +154,7 @@ type It struct {
 	failure   *Failure
 	failureMu sync.RWMutex
 	reporter  Reporter
-	isAsync   bool
+	// isAsync   bool  // This seems to be unused
 }
 
 func (it *It) run(g *G) bool {
@@ -175,7 +195,7 @@ type Xit struct {
 	parent   *Describe
 	failure  *Failure
 	reporter Reporter
-	isAsync  bool
+	// isAsync  bool  // This seems to be unused
 }
 
 func (xit *Xit) run(g *G) bool {
@@ -266,7 +286,7 @@ func runIt(g *G, it *It) {
 		//Set to nil as it shouldn't continue
 		g.shouldContinue = nil
 		g.timedOut = true
-		g.Fail("Test exceeded " + fmt.Sprintf("%s", g.timeout))
+		g.Fail(fmt.Sprintf("Test exceeded %s", g.timeout))
 	}
 	// Reset timeout value
 	g.timeout = *timeout
@@ -305,6 +325,7 @@ func (g *G) It(name string, h ...interface{}) {
 		notifyParents(g.parent)
 		if len(h) > 0 {
 			it.h = h[0]
+			notifyUnskipped(g.parent)
 		}
 		g.parent.children = append(g.parent.children, Runnable(it))
 	}
@@ -328,10 +349,19 @@ func matchesRegex(value string) bool {
 	return true
 }
 
+// notifyParents marks the parent Describe as having tests
 func notifyParents(d *Describe) {
 	d.hasTests = true
 	if d.parent != nil {
 		notifyParents(d.parent)
+	}
+}
+
+// notifyUnskipped marks the parent Describe as having unskipped tests
+func notifyUnskipped(d *Describe) {
+	d.hasUnskipped = true
+	if d.parent != nil {
+		notifyUnskipped(d.parent)
 	}
 }
 
