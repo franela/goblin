@@ -1,3 +1,3 @@
-module github.com/shakefu/goblin
+module github.com/franela/goblin
 
 go 1.16
