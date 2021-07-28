@@ -129,6 +129,30 @@ func Test(t *testing.T) {
 }
 ```
 
+How do I use it with Testify?
+----------------------------
+
+You simply need to substitute the testing framework you pass into each testify assertion. Instead of passing `t`, you pass the goblin framework `g`.
+
+```go
+package foobar
+
+import (
+    "testing"
+    "github.com/stretchr/testify/assert"
+    . "github.com/onsi/gomega"
+)
+
+func Test(t *testing.T) {
+    g := goblin.Goblin(t)
+
+    g.Describe("lala", func() {
+        g.It("lslslslsls", func() {
+            assert.Equal(g, 1, 2)
+        })
+    })
+}
+```
 
 FAQ
 ----
