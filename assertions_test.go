@@ -147,29 +147,38 @@ func TestIsTrueWithMessage(t *testing.T) {
 }
 
 func TestIsNil(t *testing.T) {
-	verifier := AssertionVerifier{ShouldPass: true}
-	a := Assertion{src: nil, fail: verifier.FailFunc}
-	a.IsNil()
-	verifier.Verify(t)
+	check := func(isNil interface{}, isNotNil interface{}) {
+		verifier := AssertionVerifier{ShouldPass: true}
+		a := Assertion{src: isNil, fail: verifier.FailFunc}
+		a.IsNil()
+		verifier.Verify(t)
 
-	verifier = AssertionVerifier{ShouldPass: false}
-	a = Assertion{src: struct{}{}, fail: verifier.FailFunc}
-	a.IsNil()
-	verifier.Verify(t)
-}
+		verifier = AssertionVerifier{ShouldPass: false}
+		a = Assertion{src: isNotNil, fail: verifier.FailFunc}
+		a.IsNil()
+		verifier.Verify(t)
+	}
 
-func TestIsNilWithSlice(t *testing.T) {
-	var slice = make([]interface{}, 0)
-	verifier := AssertionVerifier{ShouldPass: false}
-	a := Assertion{src: slice, fail: verifier.FailFunc}
-	a.IsNil()
-	verifier.Verify(t)
+	check(nil, struct {}{})
 
-	slice = nil
-	verifier = AssertionVerifier{ShouldPass: true}
-	a = Assertion{src: slice, fail: verifier.FailFunc}
-	a.IsNil()
-	verifier.Verify(t)
+	var s []struct{}
+	check(s, make([]struct{}, 0))
+
+	var c chan struct{}
+	check(c, make(chan struct{}, 0))
+
+	var m map[struct{}]struct{}
+	check(m, make(map[struct{}]struct{}, 0))
+
+	var p *struct{}
+	check(p, &s)
+
+	var ni interface{} = nil
+	var i interface{} = struct {}{}
+	check(ni, i)
+
+	var f func()
+	check(f, check)
 }
 
 func TestIsNilWithMessage(t *testing.T) {
@@ -181,29 +190,38 @@ func TestIsNilWithMessage(t *testing.T) {
 }
 
 func TestIsNotNil(t *testing.T) {
-	verifier := AssertionVerifier{ShouldPass: true}
-	a := Assertion{src: 1, fail: verifier.FailFunc}
-	a.IsNotNil()
-	verifier.Verify(t)
+	check := func(isNil interface{}, isNotNil interface{}) {
+		verifier := AssertionVerifier{ShouldPass: false}
+		a := Assertion{src: isNil, fail: verifier.FailFunc}
+		a.IsNotNil()
+		verifier.Verify(t)
 
-	verifier = AssertionVerifier{ShouldPass: false}
-	a = Assertion{src: nil, fail: verifier.FailFunc}
-	a.IsNotNil()
-	verifier.Verify(t)
-}
+		verifier = AssertionVerifier{ShouldPass: true}
+		a = Assertion{src: isNotNil, fail: verifier.FailFunc}
+		a.IsNotNil()
+		verifier.Verify(t)
+	}
 
-func TestIsNotNilWithSlice(t *testing.T) {
-	var slice = make([]interface{}, 0)
-	verifier := AssertionVerifier{ShouldPass: true}
-	a := Assertion{src: slice, fail: verifier.FailFunc}
-	a.IsNotNil()
-	verifier.Verify(t)
+	check(nil, struct {}{})
 
-	slice = nil
-	verifier = AssertionVerifier{ShouldPass: false}
-	a = Assertion{src: slice, fail: verifier.FailFunc}
-	a.IsNotNil()
-	verifier.Verify(t)
+	var s []struct{}
+	check(s, make([]struct{}, 0))
+
+	var c chan struct{}
+	check(c, make(chan struct{}, 0))
+
+	var m map[struct{}]struct{}
+	check(m, make(map[struct{}]struct{}, 0))
+
+	var p *struct{}
+	check(p, &s)
+
+	var ni interface{} = nil
+	var i interface{} = struct {}{}
+	check(ni, i)
+
+	var f func()
+	check(f, check)
 }
 
 func TestIsNotNilWithMessage(t *testing.T) {
