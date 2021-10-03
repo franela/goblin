@@ -91,20 +91,37 @@ func (a *Assertion) IsFalse(messages ...interface{}) {
 	}
 }
 
+// isNil returns whether a.src is nil or not.
+func (a *Assertion) isNil() bool {
+	if !objectsAreEqual(a.src, nil) {
+		specialKinds := []reflect.Kind{
+			reflect.Slice, reflect.Chan,
+			reflect.Map, reflect.Ptr,
+			reflect.Interface, reflect.Func,
+		}
+		t := reflect.TypeOf(a.src).Kind()
+		for _, kind := range specialKinds {
+			if t == kind {
+				return reflect.ValueOf(a.src).IsNil()
+			}
+		}
+		return false
+	}
+	return true
+}
+
 // IsNil asserts that source is nil.
 func (a *Assertion) IsNil(messages ...interface{}) {
-	if !objectsAreEqual(a.src, nil) {
+	if !a.isNil() {
 		message := fmt.Sprintf("%v %s%v", a.src, "expected to be nil", formatMessages(messages...))
-
 		a.fail(message)
 	}
 }
 
 // IsNotNil asserts that source is not nil.
 func (a *Assertion) IsNotNil(messages ...interface{}) {
-	if objectsAreEqual(a.src, nil) {
+	if a.isNil() {
 		message := fmt.Sprintf("%v %s%v", a.src, "is nil", formatMessages(messages...))
-
 		a.fail(message)
 	}
 }
