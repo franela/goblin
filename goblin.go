@@ -195,13 +195,17 @@ func parseFlags() {
 	}
 }
 
+var doParseOnce sync.Once
 var timeout = flag.Duration("goblin.timeout", 5*time.Second, "Sets default timeouts for all tests")
 var isTty = flag.Bool("goblin.tty", true, "Sets the default output format (color / monochrome)")
 var regexParam = flag.String("goblin.run", "", "Runs only tests which match the supplied regex")
 var runRegex *regexp.Regexp
 
 func Goblin(t *testing.T, arguments ...string) *G {
-	parseFlags()
+	doParseOnce.Do(func() {
+		parseFlags()
+	})
+
 	g := &G{t: t, timeout: *timeout}
 	var fancy TextFancier
 	if *isTty {
