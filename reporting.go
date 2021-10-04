@@ -10,6 +10,7 @@ import (
 
 type Reporter interface {
 	BeginDescribe(string)
+	BeginXdescribe(string)
 	EndDescribe()
 	Begin()
 	End()
@@ -88,6 +89,12 @@ func (r *DetailedReporter) printWithCheck(text string) {
 func (r *DetailedReporter) BeginDescribe(name string) {
 	fmt.Println("")
 	r.print(name)
+	r.level++
+}
+
+func (r *DetailedReporter) BeginXdescribe(name string) {
+	fmt.Println("")
+	r.print(r.fancy.Yellow(name))
 	r.level++
 }
 

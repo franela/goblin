@@ -26,6 +26,7 @@ func (g *G) Describe(name string, h func()) {
 
 	if d.parent != nil {
 		d.parent.children = append(d.parent.children, Runnable(d))
+		d.isSkipped = d.parent.isSkipped
 	}
 
 	g.parent = d
@@ -59,6 +60,7 @@ type Describe struct {
 	justBeforeEach []func()
 	hasTests       bool
 	parent         *Describe
+	isSkipped      bool
 }
 
 func (d *Describe) runBeforeEach() {
@@ -95,7 +97,12 @@ func (d *Describe) runAfterEach() {
 func (d *Describe) run(g *G) bool {
 	failed := false
 	if d.hasTests {
-		g.reporter.BeginDescribe(d.name)
+
+		if d.isSkipped {
+			g.reporter.BeginXdescribe(d.name)
+		} else {
+			g.reporter.BeginDescribe(d.name)
+		}
 
 		for _, b := range d.befores {
 			b()
@@ -136,6 +143,11 @@ type It struct {
 func (it *It) run(g *G) bool {
 	g.currentIt = it
 
+	if it.parent.isSkipped {
+		g.reporter.ItIsExcluded(it.name)
+		return false
+	}
+
 	if it.h == nil {
 		g.reporter.ItIsPending(it.name)
 		return false
@@ -163,6 +175,14 @@ func (it *It) failed(msg string, stack []string) {
 	it.failureMu.Lock()
 	defer it.failureMu.Unlock()
 	it.failure = &Failure{Stack: stack, Message: msg, TestName: it.parent.name + " " + it.name}
+}
+
+type Skip struct {
+	g *G
+}
+
+func (s *Skip) Describe(name string, h func()) {
+	s.g.xdescribe(name, h)
 }
 
 type Xit struct {
@@ -207,6 +227,8 @@ func Goblin(t *testing.T, arguments ...string) *G {
 	})
 
 	g := &G{t: t, timeout: *timeout}
+	g.Skip = &Skip{g: g}
+
 	var fancy TextFancier
 	if *isTty {
 		fancy = &TerminalFancier{}
@@ -278,6 +300,7 @@ type G struct {
 	shouldContinue chan bool
 	mutex          sync.Mutex
 	timer          *time.Timer
+	Skip           *Skip
 }
 
 func (g *G) SetReporter(r Reporter) {
@@ -309,6 +332,28 @@ func (g *G) Xit(name string, h ...interface{}) {
 	}
 }
 
+func (g *G) xdescribe(name string, h func()) {
+	d := &Describe{name: name, h: h, parent: g.parent, isSkipped: true}
+
+	if d.parent != nil {
+		d.parent.children = append(d.parent.children, Runnable(d))
+	}
+
+	g.parent = d
+
+	h()
+
+	g.parent = d.parent
+
+	if g.parent == nil && d.hasTests {
+		g.reporter.Begin()
+		if d.run(g) {
+			g.t.Fail()
+		}
+		g.reporter.End()
+	}
+}
+
 func matchesRegex(value string) bool {
 	if runRegex != nil {
 		return runRegex.MatchString(value)
@@ -324,22 +369,37 @@ func notifyParents(d *Describe) {
 }
 
 func (g *G) Before(h func()) {
+	if g.parent.isSkipped {
+		return
+	}
 	g.parent.befores = append(g.parent.befores, h)
 }
 
 func (g *G) BeforeEach(h func()) {
+	if g.parent.isSkipped {
+		return
+	}
 	g.parent.beforeEach = append(g.parent.beforeEach, h)
 }
 
 func (g *G) JustBeforeEach(h func()) {
+	if g.parent.isSkipped {
+		return
+	}
 	g.parent.justBeforeEach = append(g.parent.justBeforeEach, h)
 }
 
 func (g *G) After(h func()) {
+	if g.parent.isSkipped {
+		return
+	}
 	g.parent.afters = append(g.parent.afters, h)
 }
 
 func (g *G) AfterEach(h func()) {
+	if g.parent.isSkipped {
+		return
+	}
 	g.parent.afterEach = append(g.parent.afterEach, h)
 }
 

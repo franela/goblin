@@ -171,3 +171,69 @@ func TestNestedAfter(t *testing.T) {
 		t.Fatal("Failed")
 	}
 }
+
+func TestSkipDescribe(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe("Describe will run", func() {
+
+		g.It("This will run", func() {
+			g.Assert(4).Equal(4)
+		})
+	})
+
+	g.Skip.Describe("Describe will not run", func() {
+
+		g.Before(func() {
+			t.Fatal("This Before() should not run")
+		})
+		g.After(func() {
+			t.Fatal("This After() should not run")
+		})
+
+		g.BeforeEach(func() {
+			t.Fatal("This BeforeEach() should not run")
+		})
+		g.AfterEach(func() {
+			t.Fatal("This AfterEach() should not run")
+		})
+
+		g.JustBeforeEach(func() {
+			t.Fatal("This JustBeforeEach() should not run")
+		})
+
+		g.It("This will not run", func() {
+			t.Fatal("Failed")
+		})
+
+		g.Describe("Describe will not run also", func() {
+			g.Before(func() {
+				t.Fatal("This Before() should not run")
+			})
+			g.After(func() {
+				t.Fatal("This After() should not run")
+			})
+			g.It("This will not run also", func() {
+				t.Fatal("Failed")
+			})
+		})
+	})
+
+	g.Describe("Last describe will run", func() {
+
+		counter := 0
+
+		g.Before(func() {
+			counter++
+		})
+		g.BeforeEach(func() {
+			counter++
+		})
+		g.JustBeforeEach(func() {
+			counter++
+		})
+		g.It("This will run", func() {
+			g.Assert(counter).Equal(3)
+		})
+	})
+}
