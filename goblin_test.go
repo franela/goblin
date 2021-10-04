@@ -465,7 +465,7 @@ func TestTimeout(t *testing.T) {
 	parseFlags()
 	g := Goblin(&fakeTest)
 
-	g.Describe("Test", func() {
+	g.Describe("Test arg", func() {
 		g.It("Should fail if test exceeds the specified timeout with sync test", func() {
 			time.Sleep(100 * time.Millisecond)
 		})
@@ -476,6 +476,71 @@ func TestTimeout(t *testing.T) {
 		})
 	})
 
+	if !fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}
+
+func TestTopLevelTimeout(t *testing.T) {
+	fakeTest := testing.T{}
+	os.Args = append(os.Args, "-goblin.timeout=10ms")
+	parseFlags()
+	g := Goblin(&fakeTest)
+
+	g.Timeout(20 * time.Millisecond)
+
+	g.Describe("Test", func() {
+		g.It("Should override default timeout with sync test", func() {
+			time.Sleep(15 * time.Millisecond)
+		})
+
+		g.It("Should override default timeout with async test", func(done Done) {
+			time.Sleep(15 * time.Millisecond)
+			done()
+		})
+	})
+	if fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+}
+
+func TestDescribeTimeout(t *testing.T) {
+	fakeTest := testing.T{}
+	os.Args = append(os.Args, "-goblin.timeout=10ms")
+	parseFlags()
+	g := Goblin(&fakeTest)
+
+	g.Describe("Test 0", func() {
+		g.Timeout(20 * time.Millisecond)
+		g.It("Should override default timeout with sync test", func() {
+			time.Sleep(15 * time.Millisecond)
+		})
+
+		g.It("Should override default timeout with async test", func() {
+			time.Sleep(15 * time.Millisecond)
+		})
+
+	})
+	if fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+
+	g.Describe("Test 1", func() {
+		g.It("Should revert for different Describe with sync test", func() {
+			time.Sleep(15 * time.Millisecond)
+		})
+
+	})
+	if !fakeTest.Failed() {
+		t.Fatal("Failed")
+	}
+
+	g.Describe("Test 2", func() {
+		g.It("Should revert for different Describe with async test", func() {
+			time.Sleep(15 * time.Millisecond)
+		})
+
+	})
 	if !fakeTest.Failed() {
 		t.Fatal("Failed")
 	}
