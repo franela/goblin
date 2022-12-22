@@ -494,7 +494,7 @@ func TestItTimeout(t *testing.T) {
 		})
 
 		g.It("Should revert for different it", func() {
-			g.Assert(g.timeout).Equal(10 * time.Millisecond)
+			g.Assert(g.currentTimeout).Equal(10 * time.Millisecond)
 		})
 
 	})
