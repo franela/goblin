@@ -3,6 +3,7 @@ package goblin
 import (
 	"flag"
 	"fmt"
+	"os"
 	"regexp"
 	"runtime"
 	"sync"
@@ -44,7 +45,7 @@ func (g *G) Describe(name string, h func()) {
 }
 
 func (g *G) Timeout(time time.Duration) {
-	g.timeout = time
+	g.currentTimeout = time
 	g.timer.Reset(time)
 }
 
@@ -130,7 +131,6 @@ type It struct {
 	failure   *Failure
 	failureMu sync.RWMutex
 	reporter  Reporter
-	isAsync   bool
 }
 
 func (it *It) run(g *G) bool {
@@ -171,7 +171,6 @@ type Xit struct {
 	parent   *Describe
 	failure  *Failure
 	reporter Reporter
-	isAsync  bool
 }
 
 func (xit *Xit) run(g *G) bool {
@@ -193,6 +192,13 @@ func parseFlags() {
 	} else {
 		runRegex = nil
 	}
+
+	if envTimeout := os.Getenv("GOBLIN_TIMEOUT"); envTimeout != "" {
+		var err error
+		if *timeout, err = time.ParseDuration(envTimeout); err != nil {
+			panic(err)
+		}
+	}
 }
 
 var doParseOnce sync.Once
@@ -202,11 +208,9 @@ var regexParam = flag.String("goblin.run", "", "Runs only tests which match the 
 var runRegex *regexp.Regexp
 
 func Goblin(t *testing.T, arguments ...string) *G {
-	doParseOnce.Do(func() {
-		parseFlags()
-	})
+	doParseOnce.Do(parseFlags)
 
-	g := &G{t: t, timeout: *timeout}
+	g := &G{t: t, defaultTimeout: *timeout, currentTimeout: *timeout}
 	var fancy TextFancier
 	if *isTty {
 		fancy = &TerminalFancier{}
@@ -222,7 +226,7 @@ func runIt(g *G, it *It) {
 	g.mutex.Lock()
 	g.timedOut = false
 	g.mutex.Unlock()
-	g.timer = time.NewTimer(g.timeout)
+	g.timer = time.NewTimer(g.currentTimeout)
 	g.shouldContinue = make(chan bool)
 	if call, ok := it.h.(func()); ok {
 		// the test is synchronous
@@ -262,22 +266,28 @@ func runIt(g *G, it *It) {
 		//Set to nil as it shouldn't continue
 		g.shouldContinue = nil
 		g.timedOut = true
-		g.Fail("Test exceeded " + fmt.Sprintf("%s", g.timeout))
+		g.Fail("Test exceeded " + g.currentTimeout.String())
 	}
 	// Reset timeout value
-	g.timeout = *timeout
+	g.currentTimeout = g.defaultTimeout
 }
 
 type G struct {
 	t              *testing.T
 	parent         *Describe
 	currentIt      Itable
-	timeout        time.Duration
+	currentTimeout time.Duration
+	defaultTimeout time.Duration
 	reporter       Reporter
 	timedOut       bool
 	shouldContinue chan bool
 	mutex          sync.Mutex
 	timer          *time.Timer
+}
+
+func (g *G) SetDefaultTimeout(timeout time.Duration) {
+	g.defaultTimeout = timeout
+	g.currentTimeout = timeout
 }
 
 func (g *G) SetReporter(r Reporter) {
